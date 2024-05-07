@@ -1,5 +1,6 @@
 import sys
 import pygame as pg
+import time
 pg.init()
 
 
@@ -16,11 +17,8 @@ class Timer:
             return minutes, seconds
 
     def update_time(self):
-        pg.time.wait(1000)
-        if self.time > 0:
+        while self.time > 0:
             self.time -= 1
-        else:
-            return
 
     def get_time_to_print(self):
         minutes, seconds = self.get_time()
@@ -28,6 +26,28 @@ class Timer:
             seconds = '0' + str(seconds)
         str_time = f'0{minutes}:{seconds}'
         return str_time
+
+
+class Entity:
+    def __init__(self, x: int, y: int, width: int, height: int):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.hitbox = self.make_hitbox()
+
+    def make_hitbox(self) -> pg.Rect:
+        rect = pg.Rect(self.x, self.y, self.width, self.height)
+        return rect
+
+    def get_hitbox(self):
+        return self.hitbox
+
+    def move_right(self):
+        self.hitbox.x += 0.5
+
+    def get_coordinates(self):
+        return self.x, self.y
 
 
 class Model:
@@ -44,6 +64,10 @@ class Model:
         time = 60 // self.__death_count
         timer = Timer(time)
         return timer
+
+    def make_entity(self, x, y, width, height):
+        entity = Entity(x, y, width, height)
+        return entity
 
 # timer = Timer(5)
 # while True:

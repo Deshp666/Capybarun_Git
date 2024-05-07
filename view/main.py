@@ -28,10 +28,10 @@ class SceneRender:
         screen.fill(PEACH_COLOR)
         pg.display.update()
 
-    def render_maze_scene(self, screen: pg.Surface, time_to_print: str):
+    def render_maze_scene(self, screen: pg.Surface, time_to_print: str, rect):
         self.render_background(screen)
         self.render_maze()
-        self.render_player_icon_maze(1, 1)
+        self.render_player_icon_maze(screen, rect)
         self.render_timer(time_to_print)
         pg.display.update()
 
@@ -44,8 +44,9 @@ class SceneRender:
     def render_maze(self):
         pass
 
-    def render_player_icon_maze(self, x: int, y: int):
-        pass
+    def render_player_icon_maze(self, screen, rect):
+        pg.draw.rect(screen, GRAY_COLOR, rect)
+        pg.display.update()
 
     def render_timer(self, time_to_print: str):
         pass
