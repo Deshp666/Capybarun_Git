@@ -20,8 +20,8 @@ class Controller:
         self.__screen = pg.display.set_mode((WIDTH, HEIGHT))
         pg.display.set_caption('Capybarun')
         self.__clock = pg.time.Clock()
-        self.__scene = SceneState.menu
-        self.__model = Model()
+        self.__scene = SceneState.maze
+        self.__game_logic = Model()
         self.__scene_render = SceneRender()
         self.__buttons: dict[str:Button] = self.__scene_render.get_buttons()
 
@@ -60,16 +60,17 @@ class Controller:
 
     def render(self):
         if self.__scene == SceneState.menu:
-            self.__scene_render.render_menu(self.__screen)
+            self.__scene_render.render_menu_scene(self.__screen)
 
         elif self.__scene == SceneState.game:
-            self.__scene_render.render_game(self.__screen)
+            self.__scene_render.render_game_scene(self.__screen)
 
         elif self.__scene == SceneState.maze:
-            self.__scene_render.render_maze(self.__screen)
+            time_to_print = '1'
+            self.__scene_render.render_maze_scene(self.__screen, time_to_print)
 
         elif self.__scene == SceneState.final:
-            self.__scene_render.render_final(self.__screen)
+            self.__scene_render.render_final_scene(self.__screen)
 
     def mainloop(self):
         while True:
