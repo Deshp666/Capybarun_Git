@@ -45,7 +45,5 @@
 #
 #     pygame.draw.circle(screen, circle_color, (circle_x, circle_y), circle_radius)
 #     pygame.display.update()
-import pickle
-
-with open('test.pickle', 'wb') as file:
-    pickle.dump('1', file)
+ds = ['1' for i in range(2) for j in range(3)]
+print(ds)

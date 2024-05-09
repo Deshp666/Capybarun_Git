@@ -1,6 +1,7 @@
 import pygame as pg
 from model.constants import DELTA_TIME, TIME_FOR_MAZE
 from model.classes import Timer
+from model.maze import Maze
 pg.init()
 
 
@@ -22,3 +23,7 @@ class Model:
     def make_entity(self, x, y, width, height):
         pass
 
+    def create_maze(self):
+        maze = Maze()
+        maze = maze.generate_maze()
+        return maze

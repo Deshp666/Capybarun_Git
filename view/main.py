@@ -1,5 +1,6 @@
 import pygame as pg
-from view.constants import WHITE_COLOR, GRAY_COLOR, PEACH_COLOR, WIDTH, HEIGHT, SWAMP_COLOR, DEEP_GREEN_COLOR
+from view.constants import WHITE_COLOR, GRAY_COLOR, PEACH_COLOR, WIDTH, HEIGHT, SWAMP_COLOR, DEEP_GREEN_COLOR,\
+    MAZE_HEIGHT, MAZE_WIDTH, CAPTION
 from view.buttons import Button, Text
 pg.init()
 
@@ -13,7 +14,7 @@ class SceneRender:
         }
         self.__text = {
             'caption': Text((WIDTH // 2, HEIGHT // 9),
-                            'Capybarun',
+                            CAPTION,
                             round((WIDTH + HEIGHT) // 20))
         }
         self.__background = self.create_background()
@@ -28,22 +29,25 @@ class SceneRender:
         screen.fill(PEACH_COLOR)
         pg.display.update()
 
-    def render_maze_scene(self, screen: pg.Surface, time_to_print: str):
+    def render_maze_scene(self, screen: pg.Surface, time_to_print: str, maze: list[pg.Rect]):
         self.render_background(screen)
-        self.render_maze(screen)
+        self.render_maze(screen, maze)
         #self.render_player_icon_maze(screen)
         self.render_timer(screen, time_to_print)
         pg.display.update()
 
     def render_final_scene(self, screen: pg.Surface):
-        pass
+        screen.fill(GRAY_COLOR)
+        pg.display.update()
 
     def get_buttons(self) -> dict:
         return self.__buttons
 
-    def render_maze(self, screen: pg.Surface):
+    def render_maze(self, screen: pg.Surface, maze: list[pg.Rect]):
         background = self.create_background_for_maze()
         screen.blit(background, (WIDTH // 18, HEIGHT // 18))
+        for rect in maze:
+            pg.draw.rect(screen, PEACH_COLOR, rect)
 
     def render_player_icon_maze(self, screen: pg.Surface, x: int, y: int):
         pg.draw.rect(screen, GRAY_COLOR, rect)

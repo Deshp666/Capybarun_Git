@@ -19,9 +19,10 @@ class Timer(TimeDependent):
     def __init__(self, time: int):
         self.__value = time
 
-    def update(self):
+    def update(self) -> bool:
         if self.__value > 0:
             self.__value -= DELTA_TIME
+            return True
         elif self.__value - DELTA_TIME < 0:
             return False
 
@@ -40,11 +41,11 @@ class Timer(TimeDependent):
 
 
 class Record(TimeDependent):
-    def __int__(self):
-        self.__value = 1
+    def __init__(self):
+        self.value = 0
 
     def update(self):
-        self.__value += DELTA_TIME
+        self.value += DELTA_TIME
 
     def get_for_print(self) -> str:
         record = self.get_record()
@@ -61,14 +62,21 @@ class Record(TimeDependent):
 
         return record_to_print
 
-    def get_record(self):
-        return round(self.__value)
+    def get_record(self) -> int:
+        print(self.value)
+        return round(self.value)
 
     def save(self):
         with open('record.pickle', 'wb') as file:
             pickle.dump(self.get_record(), file)
 
-
+    def load(self):
+        try:
+            file = open('record.pickle', 'rb')
+        except FileNotFoundError:
+            return self.get_record()
+        record = pickle.load(file)
+        return record
 
 
 class Entity:
@@ -91,3 +99,6 @@ class Entity:
 
     def get_coordinates(self):
         return self.x, self.y
+
+
+#print(rec.get_record())
