@@ -23,44 +23,47 @@ class Controller:
         self.__scene = SceneState.maze
         self.__game_logic = Model()
         self.__scene_render = SceneRender()
-        self.__player_in_maze = self.__game_logic.make_entity(100, 100, 50, 50)
+        # self.__player_in_maze = self.__game_logic.make_entity(100, 100, 50, 50)
         self.__buttons: dict[str:Button] = self.__scene_render.get_buttons()
+        self.timer = self.__game_logic.create_timer()
 
     def handle_event(self):
         events = pg.event.get()
 
         for event in events:
-            keys = pg.key.get_pressed()
             if event.type == pg.QUIT:
                 sys.exit()
 
             elif event.type == pg.MOUSEBUTTONUP:
-                x, y = event.pos
                 if self.__scene == SceneState.menu:
-                    self.handle_menu_click(x, y)
+                    self.handle_menu_click()
 
-            elif self.__scene == SceneState.game:
-                self.handle_game_click()
+        if self.__scene == SceneState.game:
+            self.handle_game_click()
 
-            elif self.__scene == SceneState.maze:
-                self.handle_maze_movement(keys)
+        if self.__scene == SceneState.maze:
+            self.handle_maze_movement()
 
-    def handle_menu_click(self, x: int, y: int):
+        if self.__scene == SceneState.final:
+            self.handle_final_click()
+
+    def handle_menu_click(self):
         start_button = self.__buttons['start_button']
+        x, y = pg.mouse.get_pos()
         if start_button.collide_click((x, y)):
             self.__scene = SceneState.game
 
     def handle_game_click(self):
         pass
 
-    def handle_maze_movement(self, keys):
-        timer = self.__game_logic.create_timer()
-        timer.update_time()
-        print(timer.get_time_to_print())
+    def handle_maze_movement(self):
+        keys = pg.key.get_pressed()
+        self.timer.update()
         if keys[pg.K_SPACE]:
-            self.__player_in_maze.move_right()
+            pass
+            # self.__player_in_maze.move_right()
 
-    def handle_final_click(self, x: int, y: int):
+    def handle_final_click(self):
         pass
 
     def render(self):
@@ -71,17 +74,16 @@ class Controller:
             self.__scene_render.render_game_scene(self.__screen)
 
         elif self.__scene == SceneState.maze:
-            time_to_print = '1'
+            time_to_print = self.timer.get_for_print()
             self.__scene_render.render_maze_scene(self.__screen,
-                                                  time_to_print,
-                                                  self.__player_in_maze.get_hitbox())
+                                                  time_to_print)
 
         elif self.__scene == SceneState.final:
             self.__scene_render.render_final_scene(self.__screen)
 
     def mainloop(self):
         while True:
-            self.render()
             self.handle_event()
+            self.render()
 
             self.__clock.tick(FPS)

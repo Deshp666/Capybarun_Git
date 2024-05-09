@@ -4,15 +4,16 @@ pg.init()
 
 
 class Text:
-    def __init__(self, coordinates: (int, int), text: str, font_size: int):
+    def __init__(self, coordinates: (int, int), text: str, font_size: int, color=GRAY_COLOR):
         self.coordinates = coordinates
         self.text = text
+        self.color = color
         self.font = pg.font.Font('view/font/FRM3216x16.ttf', font_size)
         self.sprite = self.make_image()
         self.rect = self.sprite.get_rect(center=coordinates)
 
     def make_image(self) -> pg.Surface:
-        image = self.font.render(self.text, True, GRAY_COLOR)
+        image = self.font.render(self.text, True, self.color)
         return image
 
     def render(self, screen: pg.Surface):
