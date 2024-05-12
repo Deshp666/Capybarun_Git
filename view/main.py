@@ -29,9 +29,12 @@ class SceneRender:
         screen.fill(PEACH_COLOR)
         pg.display.update()
 
-    def render_maze_scene(self, screen: pg.Surface, time_to_print: str, maze: list[pg.Rect]):
+    def render_maze_scene(self, screen: pg.Surface,
+                          time_to_print: str,
+                          maze_boundaries: list[pg.Rect],
+                          maze_size: tuple[int, int]):
         self.render_background(screen)
-        self.render_maze(screen, maze)
+        self.render_maze(screen, maze_boundaries, maze_size)
         #self.render_player_icon_maze(screen)
         self.render_timer(screen, time_to_print)
         pg.display.update()
@@ -43,10 +46,10 @@ class SceneRender:
     def get_buttons(self) -> dict:
         return self.__buttons
 
-    def render_maze(self, screen: pg.Surface, maze: list[pg.Rect]):
-        background = self.create_background_for_maze()
+    def render_maze(self, screen: pg.Surface, maze_boundaries: list[pg.Rect], maze_size: tuple[int, int]):
+        background = self.create_background_for_maze(maze_size)
         screen.blit(background, (WIDTH // 18, HEIGHT // 18))
-        for rect in maze:
+        for rect in maze_boundaries:
             pg.draw.rect(screen, PEACH_COLOR, rect)
 
     def render_player_icon_maze(self, screen: pg.Surface, x: int, y: int):
@@ -68,7 +71,8 @@ class SceneRender:
         background_image = pg.transform.scale(background_image, (WIDTH, HEIGHT))
         return background_image
 
-    def create_background_for_maze(self) -> pg.Surface:
-        image = pg.Surface((WIDTH // 1.125, HEIGHT // 1.125))
+    def create_background_for_maze(self, backgrund_size: tuple[int, int]) -> pg.Surface:
+        size = backgrund_size
+        image = pg.Surface((size))
         image.fill(DEEP_GREEN_COLOR)
         return image

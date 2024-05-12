@@ -26,14 +26,14 @@ class Timer(TimeDependent):
         elif self.__value - DELTA_TIME < 0:
             return False
 
-    def get_for_print(self):
+    def get_for_print(self) -> str:
         minutes, seconds = self.get_time()
         if seconds < 10:
             seconds = '0' + str(seconds)
         str_time = f'0{minutes}:{seconds}'
         return str_time
 
-    def get_time(self):
+    def get_time(self) -> tuple[int, int]:
         time = round(self.__value)
         minutes = time // 60
         seconds = time % 60
