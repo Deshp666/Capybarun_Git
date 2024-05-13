@@ -21,7 +21,7 @@ class Presenter:
         self.__screen = pg.display.set_mode((WIDTH, HEIGHT))
         pg.display.set_caption(CAPTION)
         self.__clock = pg.time.Clock()
-        self.__scene = SceneState.maze
+        self.__scene = SceneState.menu
         self.__game_logic = Model()
         self.__game_logic.prepare_data(MAZE_WIDTH,
                                        MAZE_HEIGHT,
@@ -62,11 +62,11 @@ class Presenter:
     def handle_maze_movement(self):
         keys = pg.key.get_pressed()
         if self.__game_logic.is_maze_time_not_over() is True:
-            if keys[pg.K_SPACE]:
-                pass
+            self.__game_logic.player_in_maze_move(keys)
+            if self.__game_logic.is_prize_received():
+                self.__scene = SceneState.game
         elif self.__game_logic.is_maze_time_not_over() is False:
             self.__scene = SceneState.final
-            # self.__player_in_maze.move_right()
 
     def handle_final_click(self):
         pass
@@ -85,10 +85,14 @@ class Presenter:
             time_to_print = self.__game_logic.get_time_for_print()
             maze = self.__game_logic.get_maze_to_render()
             maze_size = self.__game_logic.get_maze_size()
+            player_in_maze_rect = self.__game_logic.get_maze_player_rect()
+            prize_rect = self.__game_logic.get_prize_rect()
             self.__scene_render.render_maze_scene(self.__screen,
                                                   time_to_print,
                                                   maze,
-                                                  maze_size)
+                                                  maze_size,
+                                                  player_in_maze_rect,
+                                                  prize_rect)
 
         elif self.__scene == SceneState.final:
             self.__scene_render.render_final_scene(self.__screen)

@@ -1,5 +1,11 @@
+from typing import Tuple
+
 import pygame as pg
 from random import choice
+
+from pygame import Rect
+
+from model.constants import PLAYER_IN_MAZE_BASE_SPEED
 
 pg.init()
 
@@ -46,7 +52,7 @@ class Cell:
                                       (self.__thickness, self.__size)))
         return boundaries
 
-    def get_coordinates(self):
+    def get_coordinates(self) -> tuple[int, int]:
         return self.__x, self.__y
 
 
@@ -76,13 +82,13 @@ class Maze:
             return False
         return self.__cells_grid[self.find_index(x, y)]
 
-    def find_index(self, x: int, y: int):
+    def find_index(self, x: int, y: int) -> int:
         return x + y * self.__columns
 
-    def get_size(self):
+    def get_size(self) -> tuple[int, int]:
         return self.__columns * self.__cell_size, self.__rows * self.__cell_size
 
-    def check_neighbors(self, cell: Cell):
+    def check_neighbors(self, cell: Cell) -> bool | Cell:
         neighbors = []
         x, y = cell.get_coordinates()
 
@@ -126,8 +132,9 @@ class Maze:
             current_cell.remove_wall('bottom')
             next_cell.remove_wall('top')
 
-    def make_maze_boundaries(self) -> list[Cell]:
-        current_cell = self.__cells_grid[1]
+    def make_maze_boundaries(self):
+        index = self.__columns // 2 + self.__rows // 2
+        current_cell = self.__cells_grid[index]
         stack = []
         break_count = 1
 
@@ -144,23 +151,72 @@ class Maze:
             elif stack:
                 current_cell = stack.pop()
 
-    def get_cells_grid(self):
+    def get_cells_grid(self) -> list[Cell]:
         return self.__cells_grid
 
 
 class MazePlayer:
-    def __init__(self, x: int, y: int, size: int, death_count: int):
+    def __init__(self, x: int, y: int, size: int, death_count: int, maze_boundaries: list[pg.Rect]):
         self.__x = x
         self.__y = y
         self.__death_count = death_count
-        self.__speed = 3 * self.__death_count
-        self.__width = size - (size // 5)
-        self.__height = size - (size // 5)
+        self.__speed_bouns = death_count - 1
+        print(self.__speed_bouns)
+        self.__speed = PLAYER_IN_MAZE_BASE_SPEED + self.__speed_bouns
+        self.__width = size - (size // 2)
+        self.__height = size - (size // 3)
         self.__player_rect = self.get_rect()
+        self.__maze_walls = maze_boundaries
+        self.__look_right = True
 
-    def get_rect(self):
+    def get_rect(self) -> pg.Rect:
         rect = pg.Rect(self.__x, self.__y, self.__width, self.__height)
         return rect
 
-    def move(self):
-        pass
+    def get_player_rect(self, need_direction: bool = True) -> tuple[Rect, bool] | Rect:
+        if need_direction:
+            return self.__player_rect, self.__look_right
+        else:
+            return self.__player_rect
+
+    def move(self, buttons: list[bool]):
+        if (buttons[pg.K_s] or buttons[pg.K_DOWN]) and self.can_move_down():
+            self.__player_rect.y += self.__speed
+        if (buttons[pg.K_w] or buttons[pg.K_UP]) and self.can_move_up():
+            self.__player_rect.y -= self.__speed
+        if (buttons[pg.K_a] or buttons[pg.K_LEFT]) and self.can_move_left():
+            self.__player_rect.x -= self.__speed
+            self.__look_right = False
+        if (buttons[pg.K_d] or buttons[pg.K_RIGHT]) and self.can_move_right():
+            self.__player_rect.x += self.__speed
+            self.__look_right = True
+
+    def can_move_down(self) -> bool:
+        temp_rect = self.__player_rect.copy()
+        temp_rect.y += self.__speed
+        return temp_rect.collidelist(self.__maze_walls) == -1
+
+    def can_move_up(self) -> bool:
+        temp_rect = self.__player_rect.copy()
+        temp_rect.y -= self.__speed
+        return temp_rect.collidelist(self.__maze_walls) == -1
+
+    def can_move_left(self) -> bool:
+        temp_rect = self.__player_rect.copy()
+        temp_rect.x -= self.__speed
+        return temp_rect.collidelist(self.__maze_walls) == -1
+
+    def can_move_right(self) -> bool:
+        temp_rect = self.__player_rect.copy()
+        temp_rect.x += self.__speed
+        return temp_rect.collidelist(self.__maze_walls) == -1
+
+
+class MazePrize:
+    def __init__(self, x: int, y: int, size: int):
+        self.__width = size - (size // 2)
+        self.__height = size - (size // 2)
+        self.__prize_rect = pg.Rect(x, y, self.__width, self.__height)
+
+    def get_prize_rect(self) -> pg.Rect:
+        return self.__prize_rect
