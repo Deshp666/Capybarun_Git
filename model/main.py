@@ -1,6 +1,6 @@
 import pygame as pg
 from model.constants import DELTA_TIME, TIME_FOR_MAZE, CELL_SIZE
-from model.classes import Timer, Record
+from model.classes import Timer, Record, Capybara, Enemy
 from model.maze import Maze, MazePlayer, MazePrize
 pg.init()
 
@@ -8,13 +8,15 @@ pg.init()
 class Model:
     def __init__(self):
         self.__speed: int = 1
-        self.__death_count: int = 5
+        self.__death_count: int = 1
         self.__timers_list: list[Timer] = []
         self.__mazes_list: list[Maze] = []
         self.__maze_players_list: list[MazePlayer] = []
         self.__maze_prize_list: list[MazePrize] = []
         self.__record: Record = Record()
         self.__pause = False
+        self.__enemy_stack: list[Enemy] = []
+        self.__capybara = Capybara()
 
     def prepare_data(self, maze_width: int,
                      maze_height: int,
@@ -23,16 +25,16 @@ class Model:
         for death in range(1, 7):
             current_maze_number = death - 1
             cell_size = CELL_SIZE // death
-            cell_indentetion = cell_size // 4
-            cell_size_part = cell_size // 1.5
+            cell_indentation = cell_size // 4
+            cell_size_part = cell_size // 1.25
             self.__mazes_list.append(Maze(cell_size,
                                           maze_width,
                                           maze_height,
                                           indentation_x,
                                           indentation_y))
             maze_boundaries = self.get_maze_to_render(current_maze_number)
-            self.__maze_players_list.append(MazePlayer(indentation_x + cell_indentetion,
-                                                       indentation_y + cell_indentetion,
+            self.__maze_players_list.append(MazePlayer(indentation_x + cell_indentation,
+                                                       indentation_y + cell_indentation,
                                                        cell_size,
                                                        death,
                                                        maze_boundaries))
@@ -42,6 +44,12 @@ class Model:
             self.__maze_prize_list.append(MazePrize(coordinate_x_prize, coordinate_y_prize, cell_size))
             time = TIME_FOR_MAZE // death
             self.__timers_list.append(Timer(time))
+
+    def get_pause_condition(self) -> bool:
+        return self.__pause
+
+    def set_pause(self):
+        self.__pause = not self.__pause
 
     def is_maze_time_not_over(self) -> bool:
         return self.__timers_list[self.__death_count].update()
@@ -72,20 +80,62 @@ class Model:
 
     def get_maze_player_rect(self) -> tuple[pg.Rect, bool]:
         player = self.__maze_players_list[self.__death_count]
-        return player.get_player_rect()
+        return player.get_rect()
 
     def get_prize_rect(self):
         prize = self.__maze_prize_list[self.__death_count]
-        return prize.get_prize_rect()
+        return prize.get_rect()
 
     def player_in_maze_move(self, buttons: list[bool]):
         player = self.__maze_players_list[self.__death_count]
         player.move(buttons)
 
     def is_prize_received(self) -> bool:
-        player_rect = self.__maze_players_list[self.__death_count].get_player_rect(False)
-        prize_rect = self.__maze_prize_list[self.__death_count].get_prize_rect()
+        player_rect = self.__maze_players_list[self.__death_count].get_rect(False)
+        prize_rect = self.__maze_prize_list[self.__death_count].get_rect()
         if player_rect.colliderect(prize_rect):
             return True
+        else:
+            return False
+
+    def run(self, need_to_jump: bool = False):
+        self.__capybara.run(need_to_jump)
+        self.__record.update()
+        if self.get_enemy_information() is None:
+            self.__enemy_stack.append(Enemy(self.get_capybara_speed()))
+        else:
+            enemy = self.__enemy_stack[0]
+            enemy.move()
+            rect = enemy.get_rect()
+            if rect.x + rect.width <= 0:
+                self.__enemy_stack.pop()
+
+    def get_capybara_rect(self) -> pg.Rect:
+        rect = self.__capybara.get_rect()
+        return rect
+
+    def get_capybara_speed(self):
+        return self.__capybara.get_speed()
+
+    def get_enemy_information(self) -> tuple[pg.Rect, str] | None:
+        if len(self.__enemy_stack) == 1:
+            rect = self.__enemy_stack[0].get_rect()
+            enemy_type = self.__enemy_stack[0].get_type()
+            return rect, enemy_type
+        else:
+            return None
+
+    def get_record_value(self) -> str:
+        return self.__record.get_for_print()
+
+    def is_capybara_dead(self) -> bool:
+        capybara_rect = self.get_capybara_rect()
+        enemy_rect = self.get_enemy_information()
+        if enemy_rect is not None:
+            if capybara_rect.colliderect(enemy_rect[0]):
+                self.__death_count += 1
+                self.__enemy_stack.pop()
+                self.__capybara.respawn()
+                return True
         else:
             return False

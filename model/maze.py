@@ -5,7 +5,7 @@ from random import choice
 
 from pygame import Rect
 
-from model.constants import PLAYER_IN_MAZE_BASE_SPEED
+from model.constants import CAPYBARA_IN_MAZE_BASE_SPEED
 
 pg.init()
 
@@ -160,20 +160,19 @@ class MazePlayer:
         self.__x = x
         self.__y = y
         self.__death_count = death_count
-        self.__speed_bouns = death_count - 1
-        print(self.__speed_bouns)
-        self.__speed = PLAYER_IN_MAZE_BASE_SPEED + self.__speed_bouns
+        self.__speed_bonus = death_count - 1
+        self.__speed = CAPYBARA_IN_MAZE_BASE_SPEED + self.__speed_bonus
         self.__width = size - (size // 2)
         self.__height = size - (size // 3)
-        self.__player_rect = self.get_rect()
+        self.__player_rect = self.make_rect()
         self.__maze_walls = maze_boundaries
         self.__look_right = True
 
-    def get_rect(self) -> pg.Rect:
+    def make_rect(self) -> pg.Rect:
         rect = pg.Rect(self.__x, self.__y, self.__width, self.__height)
         return rect
 
-    def get_player_rect(self, need_direction: bool = True) -> tuple[Rect, bool] | Rect:
+    def get_rect(self, need_direction: bool = True) -> tuple[Rect, bool] | Rect:
         if need_direction:
             return self.__player_rect, self.__look_right
         else:
@@ -214,9 +213,15 @@ class MazePlayer:
 
 class MazePrize:
     def __init__(self, x: int, y: int, size: int):
+        self.__x = x
+        self.__y = y
         self.__width = size - (size // 2)
-        self.__height = size - (size // 2)
-        self.__prize_rect = pg.Rect(x, y, self.__width, self.__height)
+        self.__height = size - (size // 3)
+        self.__prize_rect = self.make_rect()
 
-    def get_prize_rect(self) -> pg.Rect:
+    def make_rect(self):
+        rect = pg.Rect(self.__x, self.__y, self.__width, self.__height)
+        return rect
+
+    def get_rect(self) -> pg.Rect:
         return self.__prize_rect

@@ -57,7 +57,14 @@ class Presenter:
             self.__scene = SceneState.game
 
     def handle_game_click(self):
-        pass
+        keys = pg.key.get_pressed()
+        if not self.__game_logic.is_capybara_dead():
+            if keys[pg.K_UP] or keys[pg.K_SPACE] or keys[pg.K_w]:
+                self.__game_logic.run(True)
+            else:
+                self.__game_logic.run(False)
+        else:
+            self.__scene = SceneState.maze
 
     def handle_maze_movement(self):
         keys = pg.key.get_pressed()
@@ -79,7 +86,15 @@ class Presenter:
             self.__scene_render.render_menu_scene(self.__screen)
 
         elif self.__scene == SceneState.game:
-            self.__scene_render.render_game_scene(self.__screen)
+            record = self.__game_logic.get_record_value()
+            capybara_rect = self.__game_logic.get_capybara_rect()
+            enemy_rect = self.__game_logic.get_enemy_information()
+            pause_condition = self.__game_logic.get_pause_condition()
+            self.__scene_render.render_game_scene(self.__screen,
+                                                  record,
+                                                  capybara_rect,
+                                                  enemy_rect,
+                                                  pause_condition)
 
         elif self.__scene == SceneState.maze:
             time_to_print = self.__game_logic.get_time_for_print()

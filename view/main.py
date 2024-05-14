@@ -1,6 +1,6 @@
 import pygame as pg
 from view.constants import WHITE_COLOR, GRAY_COLOR, PEACH_COLOR, WIDTH, HEIGHT, SWAMP_COLOR, DEEP_GREEN_COLOR,\
-    MAZE_HEIGHT, MAZE_WIDTH, CAPTION
+    MAZE_HEIGHT, MAZE_WIDTH, CAPTION, TIMER_COORDINATES, TIMER_FONT_SIZE
 from view.buttons import Button, Text
 pg.init()
 
@@ -18,8 +18,12 @@ class SceneRender:
                             round((WIDTH + HEIGHT) // 20))
         }
         self.__background = self.create_background()
-        self.__player_in_maze_icon = self.create_player_icon_in_maze()
+        self.__capybara_in_maze_icon = self.create_capybara_icon_in_maze()
         self.__prize_icon = self.create_prize_icon()
+        self.__capybara_icon = self.create_capybara_icon()
+        self.__bear_icon = self.create_bear_icon()
+        self.__bird_icon = self.create_bird_icon()
+
 
     def render_menu_scene(self, screen: pg.Surface):
         self.render_background(screen)
@@ -27,9 +31,51 @@ class SceneRender:
         self.__text['caption'].render(screen)
         pg.display.update()
 
-    def render_game_scene(self, screen: pg.Surface):
-        screen.fill(PEACH_COLOR)
+    def render_game_scene(self, screen: pg.Surface,
+                          record: str,
+                          capybara_rect: pg.Rect,
+                          enemy_information: tuple[pg.Rect, str],
+                          pause_state: bool):
+        self.render_gameplay_background(screen)
+        self.render_capybara_icon(screen, capybara_rect)
+        self.render_enemy(screen, enemy_information)
+        self.render_score(screen, record)
+        if pause_state:
+            self.render_pause(screen)
         pg.display.update()
+
+    def render_pause(self, screen):
+        pass
+
+    def render_gameplay_background(self, screen):
+        self.render_background(screen)
+
+    def render_capybara_icon(self, screen, capybara_rect: pg.Rect):
+        player_rect = capybara_rect
+        width = player_rect.width
+        height = player_rect.height
+        x = player_rect.x
+        y = player_rect.y
+        icon = pg.transform.scale(self.__capybara_icon, (width, height))
+        screen.blit(icon, (x, y))
+
+    def render_enemy(self, screen: pg.Surface, enemy_information: tuple[pg.Rect, str] | None):
+        if enemy_information is not None:
+            enemy_rect = enemy_information[0]
+            enemy_type = enemy_information[1]
+            if enemy_type == 'bird':
+                icon = self.__bird_icon
+            else:
+                icon = self.__bear_icon
+            x = enemy_rect.x
+            y = enemy_rect.y
+            width = enemy_rect.width
+            height = enemy_rect.height
+            icon = pg.transform.scale(icon, (width, height))
+            screen.blit(icon, (x, y))
+
+    def render_score(self, screen, record):
+        pass
 
     def render_maze_scene(self, screen: pg.Surface,
                           time_to_print: str,
@@ -72,7 +118,7 @@ class SceneRender:
         height = player_rect.height
         x = player_rect.x
         y = player_rect.y
-        icon = pg.transform.scale(self.__player_in_maze_icon, (width, height))
+        icon = pg.transform.scale(self.__capybara_in_maze_icon, (width, height))
         if looking_right is False:
             icon = pg.transform.flip(icon, True, False)
         screen.blit(icon, (x, y))
@@ -103,7 +149,7 @@ class SceneRender:
         return image
 
     @staticmethod
-    def create_player_icon_in_maze() -> pg.Surface:
+    def create_capybara_icon_in_maze() -> pg.Surface:
         path_to_capybara = 'view/sprites/capy_for_maze.png'
         capybara_image = pg.image.load(path_to_capybara).convert_alpha()
         return capybara_image
@@ -114,3 +160,20 @@ class SceneRender:
         prize_image = pg.image.load(path_to_prize).convert_alpha()
         return prize_image
 
+    @staticmethod
+    def create_capybara_icon():
+        path_to_capybara = 'view/sprites/capy_walk_1.png'
+        capybara_image = pg.image.load(path_to_capybara).convert_alpha()
+        return capybara_image
+
+    @staticmethod
+    def create_bear_icon():
+        path_to_bear = 'view/sprites/1st_position_bear.png'
+        bear_image = pg.image.load(path_to_bear).convert_alpha()
+        return bear_image
+
+    @staticmethod
+    def create_bird_icon():
+        path_to_bird = 'view/sprites/1st_position_bird.png'
+        bird_image = pg.image.load(path_to_bird).convert_alpha()
+        return bird_image
