@@ -7,16 +7,15 @@ pg.init()
 
 class Model:
     def __init__(self):
-        self.__speed: int = 1
-        self.__death_count: int = 1
+        self.__death_count: int = 0
         self.__timers_list: list[Timer] = []
         self.__mazes_list: list[Maze] = []
         self.__maze_players_list: list[MazePlayer] = []
         self.__maze_prize_list: list[MazePrize] = []
         self.__record: Record = Record()
-        self.__pause = False
+        self.__pause: bool = False
         self.__enemy_stack: list[Enemy] = []
-        self.__capybara = Capybara()
+        self.__capybara: Capybara = Capybara()
 
     def prepare_data(self, maze_width: int,
                      maze_height: int,
@@ -57,16 +56,16 @@ class Model:
     def get_time_for_print(self):
         return self.__timers_list[self.__death_count].get_for_print()
 
-    def get_maze_to_render(self, maze_num: int = None):
+    def get_maze_to_render(self, maze_num: int = None) -> list[pg.Rect]:
         if maze_num is not None:
             maze = self.__mazes_list[maze_num]
         else:
             maze = self.__mazes_list[self.__death_count]
-        rects = []
+        maze_boundaries = []
         cells_list = maze.get_cells_grid()
         for cell in cells_list:
-            rects += cell.get_boundaries()
-        return rects
+            maze_boundaries += cell.get_boundaries()
+        return maze_boundaries
 
     def get_maze_size(self, maze_number: int = None):
         if maze_number is not None:
@@ -78,9 +77,9 @@ class Model:
     def update_death_count(self):
         self.__death_count += 1
 
-    def get_maze_player_rect(self) -> tuple[pg.Rect, bool]:
-        player = self.__maze_players_list[self.__death_count]
-        return player.get_rect()
+    def get_maze_capybara_rect(self) -> tuple[pg.Rect, bool]:
+        capybara = self.__maze_players_list[self.__death_count]
+        return capybara.get_rect()
 
     def get_prize_rect(self):
         prize = self.__maze_prize_list[self.__death_count]
@@ -99,29 +98,34 @@ class Model:
             return False
 
     def run(self, need_to_jump: bool = False):
-        self.__capybara.run(need_to_jump)
-        self.__record.update()
-        if self.get_enemy_information() is None:
-            self.__enemy_stack.append(Enemy(self.get_capybara_speed()))
-        else:
-            enemy = self.__enemy_stack[0]
-            enemy.move()
-            rect = enemy.get_rect()
-            if rect.x + rect.width <= 0:
-                self.__enemy_stack.pop()
+        if not self.__pause:
+            self.__capybara.run(need_to_jump)
+            self.__record.update()
+            if self.get_enemy_information() is None:
+                self.__enemy_stack.append(Enemy(self.get_capybara_speed()))
+            else:
+                enemy = self.__enemy_stack[0]
+                enemy.move()
+                enemy_rect = enemy.get_rect()
+                if enemy_rect.right <= 0:
+                    self.__enemy_stack.pop()
 
     def get_capybara_rect(self) -> pg.Rect:
-        rect = self.__capybara.get_rect()
-        return rect
+        capybara_rect = self.__capybara.get_rect()
+        return capybara_rect
+
+    def get_capybara_state(self):
+        return self.__capybara.get_state()
+
 
     def get_capybara_speed(self):
         return self.__capybara.get_speed()
 
     def get_enemy_information(self) -> tuple[pg.Rect, str] | None:
         if len(self.__enemy_stack) == 1:
-            rect = self.__enemy_stack[0].get_rect()
+            enemy_rect = self.__enemy_stack[0].get_rect()
             enemy_type = self.__enemy_stack[0].get_type()
-            return rect, enemy_type
+            return enemy_rect, enemy_type
         else:
             return None
 

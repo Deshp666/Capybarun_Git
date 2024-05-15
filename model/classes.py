@@ -1,9 +1,10 @@
 import random
 from abc import ABC, abstractmethod
-from model.constants import DELTA_TIME, GRAVITY, CAPYBARA_BASE_SPEED, CAPYBARA_JUMP_SPEED, CAPYBARA_BONUS_SPEED, \
-    CAPYBARA_JUMP_HEIGHT
-from presenter.constants import CAPYBARA_WIDTH, CAPYBARA_HEIGHT, CAPYBARA_POS_X, CAPYBARA_Y_POS, BEAR_POS_Y, ENEMY_START_POS_X,\
-    BIRD_CENTER_POS_Y, BIRD_TOP_POS_Y, GROUND_HEIGHT, BIRD_HEIGHT, BEAR_HEIGHT, BIRD_WIDTH, BEAR_WIDTH, GROUND_Y_POS
+from model.constants import DELTA_TIME, GRAVITY, CAPYBARA_BASE_SPEED_Y, CAPYBARA_JUMP_SPEED, CAPYBARA_BONUS_SPEED, \
+    CAPYBARA_JUMP_HEIGHT, CAPYBARA_BASE_SPEED_X
+from presenter.constants import CAPYBARA_WIDTH, CAPYBARA_HEIGHT, CAPYBARA_POS_X, CAPYBARA_Y_POS, BEAR_POS_Y,\
+    ENEMY_START_POS_X, BIRD_CENTER_POS_Y, BIRD_TOP_POS_Y, GROUND_HEIGHT, BIRD_HEIGHT, BEAR_HEIGHT, BIRD_WIDTH,\
+    BEAR_WIDTH, GROUND_Y_POS, BIRD_BOTTOM_POS_Y
 import pickle
 import pygame as pg
 from random import randint
@@ -54,17 +55,15 @@ class Record(TimeDependent):
 
     def get_for_print(self) -> str:
         record = self.get_record()
-        record_to_print = ''
 
         if record < 10:
-            record_to_print = f'000{record_to_print}'
-        elif 10 < record < 100:
-            record_to_print = f'00{record_to_print}'
-        elif 100 < record < 1000:
-            record_to_print = f'0{record_to_print}'
+            record_to_print = f'000{record}'
+        elif 10 <= record < 100:
+            record_to_print = f'00{record}'
+        elif 100 <= record < 1000:
+            record_to_print = f'0{record}'
         else:
-            record_to_print = str(record_to_print)
-
+            record_to_print = str(record)
         return record_to_print
 
     def get_record(self) -> int:
@@ -97,7 +96,6 @@ class Enemy:
     def get_type(self):
         return self.__enemy_type
 
-
     @staticmethod
     def choose_enemy_type():
         random_int = random.randint(1, 2)
@@ -114,8 +112,10 @@ class Enemy:
         else:
             self.__width = BIRD_WIDTH
             self.__height = BIRD_HEIGHT
-            random_int = random.randint(1, 2)
+            random_int = random.randint(1, 3)
             if random_int == 1:
+                self.__y = BIRD_BOTTOM_POS_Y
+            elif random_int == 2:
                 self.__y = BIRD_CENTER_POS_Y
             else:
                 self.__y = BIRD_TOP_POS_Y
@@ -138,7 +138,7 @@ class Capybara:
         self.__width = CAPYBARA_WIDTH
         self.__height = CAPYBARA_HEIGHT
         self.__gravity = GRAVITY
-        self.__on_ground = True
+        self.__is_on_ground = True
         self.__speed_x = 8
         self.__speed_y = 0
         self.__jump_speed = -CAPYBARA_JUMP_SPEED
@@ -152,41 +152,44 @@ class Capybara:
     def get_rect(self) -> pg.Rect:
         return self.__rect
 
-    def get_speed(self):
+    def get_state(self) -> bool:
+        return self.__is_on_ground
+
+    def get_speed(self) -> int:
         return round(self.__speed_x)
 
     def increase_speed(self):
         self.__speed_x += CAPYBARA_BONUS_SPEED
 
     def jump(self, need_to_jump: bool):
-        if self.__on_ground is False and self.__is_falling:
+        if not self.__is_on_ground and self.__is_falling:
             self.__speed_y += self.__gravity ** 2
             self.__rect.y += self.__speed_y
 
-        if self.__rect.y + self.__rect.height <= 300:
+        if self.__rect.bottom <= CAPYBARA_JUMP_HEIGHT:
             self.__is_falling = True
             self.__speed_y = 0
 
-        if self.__rect.y + self.__rect.height > GROUND_Y_POS:
+        if self.__rect.bottom > GROUND_Y_POS:
             self.__is_falling = False
-            self.__on_ground = True
+            self.__is_on_ground = True
             self.__rect.y = CAPYBARA_Y_POS
 
-        if self.__on_ground is False and self.__is_falling is False:
+        if not self.__is_on_ground and not self.__is_falling:
             self.__rect.y -= self.__speed_y
             if self.__speed_y > 0:
-                self.__speed_y -= 1
+                self.__speed_y -= self.__gravity
 
-        if need_to_jump and self.__on_ground:
-            self.__on_ground = False
-            self.__speed_y = CAPYBARA_BASE_SPEED
+        if need_to_jump and self.__is_on_ground:
+            self.__is_on_ground = False
+            self.__speed_y = CAPYBARA_BASE_SPEED_Y
 
     def run(self, need_to_jump: bool):
         self.increase_speed()
         self.jump(need_to_jump)
 
     def respawn(self):
-        self.__on_ground = True
+        self.__is_on_ground = True
         self.__is_falling = False
         self.__rect.y = CAPYBARA_Y_POS
         self.__speed_y = 0

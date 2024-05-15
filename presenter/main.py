@@ -44,6 +44,13 @@ class Presenter:
                 elif self.__scene == SceneState.final:
                     self.handle_final_click()
 
+                elif self.__game_logic.get_pause_condition():
+                    self.handle_pause_click()
+
+            elif event.type == pg.KEYDOWN and SceneState.game:
+                if event.key == pg.K_ESCAPE:
+                    self.__game_logic.set_pause()
+
         if self.__scene == SceneState.game:
             self.handle_game_click()
 
@@ -66,11 +73,19 @@ class Presenter:
         else:
             self.__scene = SceneState.maze
 
+    def handle_pause_click(self):
+        pause_button = self.__buttons['pause_button']
+        x, y = pg.mouse.get_pos()
+        if pause_button.collide_click((x, y)):
+            self.__game_logic.set_pause()
+
     def handle_maze_movement(self):
         keys = pg.key.get_pressed()
         if self.__game_logic.is_maze_time_not_over() is True:
             self.__game_logic.player_in_maze_move(keys)
             if self.__game_logic.is_prize_received():
+                if self.__game_logic.get_pause_condition():
+                    self.__game_logic.set_pause()
                 self.__scene = SceneState.game
         elif self.__game_logic.is_maze_time_not_over() is False:
             self.__scene = SceneState.final
@@ -79,7 +94,7 @@ class Presenter:
         pass
 
     def restart_game(self):
-        pass
+        self.__scene = SceneState.game
 
     def render(self):
         if self.__scene == SceneState.menu:
@@ -88,11 +103,12 @@ class Presenter:
         elif self.__scene == SceneState.game:
             record = self.__game_logic.get_record_value()
             capybara_rect = self.__game_logic.get_capybara_rect()
+            is_capybara_jump = self.__game_logic.get_capybara_state()
             enemy_rect = self.__game_logic.get_enemy_information()
             pause_condition = self.__game_logic.get_pause_condition()
             self.__scene_render.render_game_scene(self.__screen,
                                                   record,
-                                                  capybara_rect,
+                                                  (capybara_rect, is_capybara_jump),
                                                   enemy_rect,
                                                   pause_condition)
 
@@ -100,7 +116,7 @@ class Presenter:
             time_to_print = self.__game_logic.get_time_for_print()
             maze = self.__game_logic.get_maze_to_render()
             maze_size = self.__game_logic.get_maze_size()
-            player_in_maze_rect = self.__game_logic.get_maze_player_rect()
+            player_in_maze_rect = self.__game_logic.get_maze_capybara_rect()
             prize_rect = self.__game_logic.get_prize_rect()
             self.__scene_render.render_maze_scene(self.__screen,
                                                   time_to_print,
