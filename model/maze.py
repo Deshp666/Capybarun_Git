@@ -1,35 +1,30 @@
-from typing import Tuple
-
-import pygame as pg
 from random import choice
-
-from pygame import Rect
-
 from model.constants import CAPYBARA_IN_MAZE_BASE_SPEED
+import pygame as pg
 
 pg.init()
 
 
 class Cell:
     def __init__(self, x: int, y: int, size: int, indentation_x: int, indentation_y: int):
-        self.__x = x
-        self.__y = y
-        self.__walls = {
+        self.__x: int = x
+        self.__y: int = y
+        self.__walls: dict[str: bool] = {
             'top': True,
             'right': True,
             'left': True,
             'bottom': True
         }
-        self.__indentation_x = indentation_x
-        self.__indentation_y = indentation_y
-        self.__thickness = 3
-        self.__size = size
-        self.__is_visited = False
+        self.__indentation_x: int = indentation_x
+        self.__indentation_y: int = indentation_y
+        self.__thickness: int = 3
+        self.__size: int = size
+        self.__is_visited: bool = False
 
     def visited(self):
         self.__is_visited = True
 
-    def is_visited(self):
+    def is_visited(self) -> bool:
         return self.__is_visited
 
     def remove_wall(self, wall: str):
@@ -57,16 +52,17 @@ class Cell:
 
 
 class Maze:
-    def __init__(self, cell_size: int, maze_width: int,
+    def __init__(self, cell_size: int,
+                 maze_width: int,
                  maze_height: int,
                  indentation_x: int,
                  indentation_y: int):
-        self.__cell_size = cell_size
-        self.__indentation_x = indentation_x
-        self.__indentation_y = indentation_y
-        self.__columns = round(maze_width // self.__cell_size)
-        self.__rows = round(maze_height // self.__cell_size)
-        self.__cells_grid = self.make_cells_grid()
+        self.__cell_size: int = cell_size
+        self.__indentation_x: int = indentation_x
+        self.__indentation_y: int = indentation_y
+        self.__columns: int = round(maze_width // self.__cell_size)
+        self.__rows: int = round(maze_height // self.__cell_size)
+        self.__cells_grid: list[Cell] = self.make_cells_grid()
         self.make_maze_boundaries()
 
     def make_cells_grid(self) -> list[Cell]:
@@ -151,28 +147,32 @@ class Maze:
             elif stack:
                 current_cell = stack.pop()
 
-    def get_cells_grid(self) -> list[Cell]:
-        return self.__cells_grid
+    def get_boundaries(self) -> list[pg.Rect]:
+        boundaries = []
+        cells_list = self.__cells_grid
+        for cell in cells_list:
+            boundaries += cell.get_boundaries()
+        return boundaries
 
 
 class MazePlayer:
     def __init__(self, x: int, y: int, size: int, death_count: int, maze_boundaries: list[pg.Rect]):
-        self.__x = x
-        self.__y = y
-        self.__death_count = death_count
-        self.__speed_bonus = death_count - 1
-        self.__speed = CAPYBARA_IN_MAZE_BASE_SPEED + self.__speed_bonus
-        self.__width = size - (size // 2)
-        self.__height = size - (size // 3)
-        self.__player_rect = self.make_rect()
-        self.__maze_walls = maze_boundaries
-        self.__look_right = True
+        self.__x: int = x
+        self.__y: int = y
+        self.__death_count: int = death_count
+        self.__speed_bonus: int = death_count // 2
+        self.__speed: int = CAPYBARA_IN_MAZE_BASE_SPEED + self.__speed_bonus
+        self.__width: int = size - (size // 2)
+        self.__height: int = size - (size // 3)
+        self.__player_rect: pg.Rect = self.make_rect()
+        self.__maze_walls: list[pg.Rect] = maze_boundaries
+        self.__look_right: bool = True
 
     def make_rect(self) -> pg.Rect:
         rect = pg.Rect(self.__x, self.__y, self.__width, self.__height)
         return rect
 
-    def get_rect(self, need_direction: bool = True) -> tuple[Rect, bool] | Rect:
+    def get_rect(self, need_direction: bool = True) -> tuple[pg.Rect, bool] | pg.Rect:
         if need_direction:
             return self.__player_rect, self.__look_right
         else:
@@ -213,13 +213,13 @@ class MazePlayer:
 
 class MazePrize:
     def __init__(self, x: int, y: int, size: int):
-        self.__x = x
-        self.__y = y
-        self.__width = size - (size // 2)
-        self.__height = size - (size // 3)
-        self.__prize_rect = self.make_rect()
+        self.__x: int = x
+        self.__y: int = y
+        self.__width: int = size - (size // 2)
+        self.__height: int = size - (size // 3)
+        self.__prize_rect: pg.Rect = self.make_rect()
 
-    def make_rect(self):
+    def make_rect(self) -> pg.Rect:
         rect = pg.Rect(self.__x, self.__y, self.__width, self.__height)
         return rect
 
