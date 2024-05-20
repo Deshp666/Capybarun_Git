@@ -33,18 +33,19 @@ class Cell:
     def get_boundaries(self) -> list[pg.Rect]:
         boundaries = []
         x, y = self.__x * self.__size, self.__y * self.__size
+        size = self.__size + 3
         if self.__walls['top']:
             boundaries.append(pg.Rect((x + self.__indentation_x, y + self.__indentation_y),
-                                      (self.__size, self.__thickness)))
+                                      (size, self.__thickness)))
         if self.__walls['right']:
             boundaries.append(pg.Rect((x + self.__size + self.__indentation_x, y + self.__indentation_y),
-                                      (self.__thickness, self.__size)))
+                                      (self.__thickness, size)))
         if self.__walls['bottom']:
             boundaries.append(pg.Rect((x + self.__indentation_x, y + self.__size + self.__indentation_y),
-                                      (self.__size, self.__thickness)))
+                                      (size, self.__thickness)))
         if self.__walls['left']:
             boundaries.append(pg.Rect((x + self.__indentation_x, y + self.__indentation_y),
-                                      (self.__thickness, self.__size)))
+                                      (self.__thickness, size)))
         return boundaries
 
     def get_coordinates(self) -> tuple[int, int]:
@@ -84,7 +85,7 @@ class Maze:
     def get_size(self) -> tuple[int, int]:
         return self.__columns * self.__cell_size, self.__rows * self.__cell_size
 
-    def check_neighbors(self, cell: Cell) -> bool | Cell:
+    def check_neighbors(self, cell: Cell) -> None | Cell:
         neighbors = []
         x, y = cell.get_coordinates()
 
@@ -105,7 +106,7 @@ class Maze:
         if neighbors:
             return choice(neighbors)
         else:
-            return False
+            return None
 
     @staticmethod
     def remove_walls(current_cell: Cell, next_cell: Cell):
@@ -132,15 +133,15 @@ class Maze:
         index = self.__columns // 2 + self.__rows // 2
         current_cell = self.__cells_grid[index]
         stack = []
-        break_count = 1
+        count = 1
 
-        while break_count != len(self.__cells_grid):
+        while count != len(self.__cells_grid):
             current_cell.visited()
             next_cell = self.check_neighbors(current_cell)
 
             if next_cell:
                 next_cell.visited()
-                break_count += 1
+                count += 1
                 stack.append(current_cell)
                 self.remove_walls(current_cell, next_cell)
                 current_cell = next_cell

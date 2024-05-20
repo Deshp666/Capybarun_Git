@@ -50,7 +50,7 @@ class Presenter:
 
             if event.type == pg.KEYDOWN and SceneState.runner:
                 if event.key == pg.K_ESCAPE:
-                    self.__game_logic.set_pause()
+                    self.__game_logic.toggle_pause()
 
         if self.__scene == SceneState.runner:
             self.handle_runner_click()
@@ -81,7 +81,7 @@ class Presenter:
         pause_button = self.__buttons['pause_button']
         x, y = pg.mouse.get_pos()
         if pause_button.collide_click((x, y)):
-            self.__game_logic.set_pause()
+            self.__game_logic.toggle_pause()
 
     def handle_maze_movement(self):
         keys = pg.key.get_pressed()
@@ -90,7 +90,7 @@ class Presenter:
 
             if self.__game_logic.is_prize_received():
                 if self.__game_logic.get_pause_condition():
-                    self.__game_logic.set_pause()
+                    self.__game_logic.toggle_pause()
                 self.__scene = SceneState.runner
 
         elif self.__game_logic.is_maze_time_not_over() is False:

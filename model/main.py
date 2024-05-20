@@ -12,7 +12,7 @@ class Model:
                  maze_height: int,
                  indentation_x: int,
                  indentation_y: int):
-        self.__death_count: int = 0
+        self.__death_count: int = 10
         self.__timers_list: list[Timer] = []
         self.__mazes_list: list[Maze] = []
         self.__maze_capybara_list: list[MazePlayer] = []
@@ -21,28 +21,31 @@ class Model:
         self.__pause: bool = False
         self.__enemy_stack: list[Enemy] = []
         self.__capybara: Capybara = Capybara()
-        self.prepare_data(maze_width, maze_height, indentation_x, indentation_y)
+        self.__prepare_data(maze_width, maze_height, indentation_x, indentation_y)
 
-    def prepare_data(self, maze_width: int,
-                     maze_height: int,
-                     indentation_x: int,
-                     indentation_y: int):
-        for death in range(1, 10):
+    def __prepare_data(self, maze_width: int,
+                       maze_height: int,
+                       indentation_x: int,
+                       indentation_y: int):
+        for death in range(1, 80):
             current_maze_number = death - 1
-            cell_size = CELL_SIZE // death
+            cell_size = CELL_SIZE * (0.5 + 0.5 / death)
             cell_indentation = cell_size // 4
             cell_size_part = cell_size // 1.25
+
             self.__mazes_list.append(Maze(cell_size,
                                           maze_width,
                                           maze_height,
                                           indentation_x,
                                           indentation_y))
             maze_boundaries = self.get_maze_to_render(current_maze_number)
+
             self.__maze_capybara_list.append(MazePlayer(indentation_x + cell_indentation,
                                                         indentation_y + cell_indentation,
                                                         cell_size,
                                                         death,
                                                         maze_boundaries))
+
             current_maze_size = self.get_maze_size(current_maze_number)
             coordinate_x_prize = current_maze_size[0] + indentation_x - cell_size_part
             coordinate_y_prize = current_maze_size[1] + indentation_y - cell_size_part
@@ -53,7 +56,7 @@ class Model:
     def get_pause_condition(self) -> bool:
         return self.__pause
 
-    def set_pause(self):
+    def toggle_pause(self):
         self.__pause = not self.__pause
 
     def is_maze_time_not_over(self) -> bool:
@@ -89,7 +92,7 @@ class Model:
             maze = self.__mazes_list[self.__death_count]
         return maze.get_size()
 
-    def update_death_count(self):
+    def __update_death_count(self):
         self.__death_count += 1
 
     def get_maze_capybara_information(self) -> tuple[pg.Rect, bool]:
