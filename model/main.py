@@ -12,7 +12,7 @@ class Model:
                  maze_height: int,
                  indentation_x: int,
                  indentation_y: int):
-        self.__death_count: int = 10
+        self.__death_count: int = 0
         self.__timers_list: list[Timer] = []
         self.__mazes_list: list[Maze] = []
         self.__maze_capybara_list: list[MazePlayer] = []
