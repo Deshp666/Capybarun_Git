@@ -2,14 +2,16 @@ import pygame as pg
 from view.constants import WHITE_COLOR, GRAY_COLOR, PEACH_COLOR, WIDTH, HEIGHT, SWAMP_COLOR, DEEP_GREEN_COLOR, \
     MAZE_HEIGHT, MAZE_WIDTH, CAPTION, TIMER_COORDINATES, TIMER_FONT_SIZE, SCORE_COORDINATES, SCORE_FONT_SIZE, \
     PAUSE_MENU_SIZE, PAUSE_FONT_SIZE, PAUSE_COORDINATES, CAPTION_TEXT_COORDINATES, CAPTION_TEXT_SIZE, \
-    START_BUTTON_COORDINATES, START_BUTTON_SIZE, START_BUTTON_FONT_SIZE, BLACK_COLOR, MAZE_BACKGROUND_COORDINATES,\
+    START_BUTTON_COORDINATES, START_BUTTON_SIZE, START_BUTTON_FONT_SIZE, BLACK_COLOR, MAZE_BACKGROUND_COORDINATES, \
     HALF_WIDTH, HALF_HEIGHT, GAMEOVER_TEXT_COORDINATES, GAMEOVER_TEXT_FONT_SIZE, FINAL_SCREEN_BACKGROUND_SIZE, \
     FINAL_SCREEN_BACKGROUND_COORDINATES, SCORE_TEXT_COORDINATES, SCORE_NUM_TEXT_COORDINATES, RECORD_TEXT_COORDINATES, \
     RECORD_NUM__TEXT_COORDINATES, RESTART_BUTTON_FONT_SIZE, RESTART_BUTTON_COORDINATES, RESTART_BUTTON_SIZE, \
-    FINAL_TEXT_FONT_SIZE, BACKGROUND_SPEED_MULTIPLIER, CAPYBARA_SPEED_MULTIPLIER, ENEMY_SPEED_MULTIPLIER
+    FINAL_TEXT_FONT_SIZE, BACKGROUND_SPEED_MULTIPLIER, CAPYBARA_SPEED_MULTIPLIER, ENEMY_SPEED_MULTIPLIER, \
+    SOUND_BUTTON_COORDINATE, SOUND_BUTTON_SIZE
 from view.buttons import Button, Text
-from view.paths import BG_FOR_TEXT_PATH, MUSIC_TURN_ON_BUTTON_PATH, MUSIC_TURN_OFF_BUTTON_PATH
+from view.paths import BG_FOR_TEXT_PATH, SOUND_TURN_ON_BUTTON_PATH, SOUND_TURN_OFF_BUTTON_PATH
 from view.sprites import Sprites
+
 pg.init()
 
 
@@ -32,8 +34,19 @@ class SceneRender:
                                      'RESTART',
                                      RESTART_BUTTON_SIZE,
                                      RESTART_BUTTON_FONT_SIZE,
-                                     BG_FOR_TEXT_PATH)
+                                     BG_FOR_TEXT_PATH),
+            'turn_on_sound': Button(SOUND_BUTTON_COORDINATE,
+                                    '',
+                                    SOUND_BUTTON_SIZE,
+                                    0,
+                                    SOUND_TURN_ON_BUTTON_PATH),
+            'turn_off_sound': Button(SOUND_BUTTON_COORDINATE,
+                                     '',
+                                     SOUND_BUTTON_SIZE,
+                                     0,
+                                     SOUND_TURN_OFF_BUTTON_PATH)
         }
+
         self.__text: dict[str: Button] = {
             'caption': Text(CAPTION_TEXT_COORDINATES,
                             CAPTION,
@@ -59,10 +72,23 @@ class SceneRender:
         self.enemy_parameter_to_calculate_frame: float = 0
         self.capybara_parameter_to_calculate_frame: float = 0
 
-    def render_menu_scene(self, screen: pg.Surface):
+    def render_menu_scene(self, screen: pg.Surface, sounds_on: bool):
         self.__render_background(screen)
-        self.__buttons['start_button'].render(screen)
-        self.__text['caption'].render(screen)
+
+        start_button = self.__buttons['start_button']
+        turn_on_button = self.__buttons['turn_on_sound']
+        turn_off_button = self.__buttons['turn_off_sound']
+        caption_text = self.__text['caption']
+
+        start_button.render(screen)
+
+        if sounds_on:
+            turn_on_button.render(screen)
+        else:
+            turn_off_button.render(screen)
+
+        caption_text.render(screen)
+
         pg.display.update()
 
     def __render_background(self, screen: pg.Surface):
@@ -76,7 +102,8 @@ class SceneRender:
                             capybara_information: tuple[pg.Rect, bool],
                             enemy_information: tuple[pg.Rect, str],
                             pause_state: bool,
-                            speed: int):
+                            speed: int,
+                            sound_state: bool):
         if pause_state or not capybara_information[1]:
             need_to_move_bg = False
         else:
@@ -93,7 +120,7 @@ class SceneRender:
         self.__render_score(screen, record)
 
         if pause_state:
-            self.__render_pause(screen)
+            self.__render_pause(screen, sound_state)
 
         pg.display.update()
 
@@ -160,6 +187,7 @@ class SceneRender:
                 animations_frames = self.__sprites.bird_animation
             else:
                 animations_frames = self.__sprites.bear_animation
+
             frames_count = len(animations_frames)
             frame_to_render = int(self.enemy_parameter_to_calculate_frame % frames_count)
             sprite = pg.transform.scale(animations_frames[frame_to_render], size)
@@ -179,7 +207,7 @@ class SceneRender:
                      SWAMP_COLOR)
         score.render(screen)
 
-    def __render_pause(self, screen: pg.Surface):
+    def __render_pause(self, screen: pg.Surface, sound_state: bool):
         size = WIDTH, HEIGHT
         coordinates = 0, 0
         visibility_percent = 70
@@ -190,6 +218,14 @@ class SceneRender:
         screen.blit(background, coordinates)
 
         pause_button = self.__buttons['pause_button']
+        turn_on_button = self.__buttons['turn_on_sound']
+        turn_off_button = self.__buttons['turn_off_sound']
+
+        if sound_state:
+            turn_on_button.render(screen)
+        else:
+            turn_off_button.render(screen)
+
         pause_button.render(screen)
 
     def render_maze_scene(self,
@@ -259,12 +295,17 @@ class SceneRender:
 
         score_num = Text(SCORE_NUM_TEXT_COORDINATES, score, FINAL_TEXT_FONT_SIZE, WHITE_COLOR)
         record_num = Text(RECORD_NUM__TEXT_COORDINATES, record, FINAL_TEXT_FONT_SIZE, WHITE_COLOR)
+        gameover_text = self.__text['gameover']
+        score_text = self.__text['score']
+        record_text = self.__text['record']
+        restart_button = self.__buttons['restart_button']
+
         score_num.render(screen)
         record_num.render(screen)
-        self.__text['gameover'].render(screen)
-        self.__text['score'].render(screen)
-        self.__text['record'].render(screen)
-        self.__buttons['restart_button'].render(screen)
+        gameover_text.render(screen)
+        score_text.render(screen)
+        record_text.render(screen)
+        restart_button.render(screen)
 
     @staticmethod
     def __create_background_for_maze(background_size: tuple[int, int]) -> pg.Surface:

@@ -3,11 +3,13 @@ from view.constants import WIDTH, HEIGHT, FPS, CAPTION, MAZE_WIDTH, MAZE_HEIGHT,
     MAZE_INDENTATION_X
 from view.buttons import Button
 from model.main import Model
+from presenter.constants import JUMP_SOUND_PATH, BASIC_VOLUME
 import pygame as pg
 import sys
 from enum import Enum
 
 pg.init()
+pg.mixer.init()
 
 
 class SceneState(Enum):
@@ -29,6 +31,9 @@ class Presenter:
                                          MAZE_INDENTATION_Y)
         self.__scene_render: SceneRender = SceneRender()
         self.__buttons: dict[str:Button] = self.__scene_render.get_buttons()
+        self.__jump_sound = pg.mixer.Sound(JUMP_SOUND_PATH)
+        self.__jump_sound.set_volume(BASIC_VOLUME)
+        self.__sound_turned_on: bool = True
 
     def handle_event(self):
         events = pg.event.get()
@@ -61,17 +66,24 @@ class Presenter:
     def handle_menu_click(self):
         keys = pg.key.get_pressed()
         start_button = self.__buttons['start_button']
+        turn_on_button = self.__buttons['turn_on_sound']
         x, y = pg.mouse.get_pos()
         if start_button.collide_click((x, y)) or keys[pg.K_RETURN]:
             self.__scene = SceneState.runner
+        if turn_on_button.collide_click((x, y)):
+            self.toggle_sound()
 
     def handle_runner_click(self):
         keys = pg.key.get_pressed()
         if not self.__game_logic.is_capybara_dead():
             if keys[pg.K_UP] or keys[pg.K_SPACE] or keys[pg.K_w]:
+                if self.__game_logic.get_capybara_state() and not self.__game_logic.get_pause_condition():
+                    self.__jump_sound.play()
                 self.__game_logic.run(True)
+
             elif keys[pg.K_DOWN] or keys[pg.K_s]:
                 self.__game_logic.run(False, True)
+
             else:
                 self.__game_logic.run(False)
         else:
@@ -79,9 +91,20 @@ class Presenter:
 
     def handle_pause_click(self):
         pause_button = self.__buttons['pause_button']
+        turn_on_button = self.__buttons['turn_on_sound']
         x, y = pg.mouse.get_pos()
         if pause_button.collide_click((x, y)):
             self.__game_logic.toggle_pause()
+        if turn_on_button.collide_click((x, y)):
+            self.toggle_sound()
+
+    def toggle_sound(self):
+        if self.__sound_turned_on:
+            self.__sound_turned_on = False
+            self.__jump_sound.set_volume(0)
+        else:
+            self.__sound_turned_on = True
+            self.__jump_sound.set_volume(BASIC_VOLUME)
 
     def handle_maze_movement(self):
         keys = pg.key.get_pressed()
@@ -126,7 +149,7 @@ class Presenter:
             self.render_final_scene()
 
     def render_menu_scene(self):
-        self.__scene_render.render_menu_scene(self.__screen)
+        self.__scene_render.render_menu_scene(self.__screen, self.__sound_turned_on)
 
     def render_runner_scene(self):
         record = self.__game_logic.get_record_value()
@@ -135,12 +158,15 @@ class Presenter:
         enemy_rect = self.__game_logic.get_enemy_information()
         pause_condition = self.__game_logic.get_pause_condition()
         speed = self.__game_logic.get_capybara_speed()
+        sound_state = self.__sound_turned_on
         self.__scene_render.render_runner_scene(self.__screen,
                                                 record,
-                                                (capybara_rect, is_capybara_jump),
+                                                (capybara_rect,
+                                                 is_capybara_jump),
                                                 enemy_rect,
                                                 pause_condition,
-                                                speed)
+                                                speed,
+                                                sound_state)
 
     def render_maze_scene(self):
         time_to_print = self.__game_logic.get_time_for_print()

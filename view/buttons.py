@@ -27,7 +27,8 @@ class Button(Text):
     def __init__(self, coordinates: tuple[int, int],
                  text: str,
                  size: tuple[int, int],
-                 font_size: int, path: str):
+                 font_size: int,
+                 path: str):
         self._size: tuple[int, int] = size
         self._path: str = path
         super().__init__(coordinates, text, font_size)
