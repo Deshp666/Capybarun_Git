@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
-from model.constants import DELTA_TIME, GRAVITY, CAPYBARA_BASE_SPEED_Y, CAPYBARA_JUMP_SPEED, CAPYBARA_BONUS_SPEED, \
-     CAPYBARA_BASE_SPEED_X
+from model.constants import DELTA_TIME, GRAVITY, CAPYBARA_BASE_SPEED_Y, CAPYBARA_BONUS_SPEED, CAPYBARA_BASE_SPEED_X
 from presenter.constants import CAPYBARA_WIDTH, CAPYBARA_HEIGHT, CAPYBARA_POS_X, CAPYBARA_Y_POS, BEAR_POS_Y,\
     ENEMY_START_POS_X, BIRD_CENTER_POS_Y, BIRD_TOP_POS_Y, GROUND_HEIGHT, BIRD_HEIGHT, BEAR_HEIGHT, BIRD_WIDTH,\
     BEAR_WIDTH, GROUND_Y_POS, BIRD_BOTTOM_POS_Y
@@ -129,7 +128,6 @@ class Capybara:
         self.__is_on_ground: bool = True
         self.__speed_x: float = CAPYBARA_BASE_SPEED_X
         self.__speed_y: float = 0
-        self.__jump_speed: int = -CAPYBARA_JUMP_SPEED
         self.__rect: pg.Rect = self.make_rect()
 
     def make_rect(self) -> pg.Rect:
