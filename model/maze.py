@@ -71,12 +71,12 @@ class Maze:
                       for row in range(self.__rows) for column in range(self.__columns)]
         return cells_grid
 
-    def check_cell(self, x: int, y: int) -> Cell | bool:
+    def check_cell(self, x: int, y: int) -> Cell | None:
         if x < 0 or \
                 x > self.__columns - 1 or \
                 y < 0 or \
                 y > self.__rows - 1:
-            return False
+            return None
         return self.__cells_grid[self.find_index(x, y)]
 
     def find_index(self, x: int, y: int) -> int:
@@ -133,15 +133,15 @@ class Maze:
         index = self.__columns // 2 + self.__rows // 2
         current_cell = self.__cells_grid[index]
         stack = []
-        count = 1
+        visited_cells_count = 1
 
-        while count != len(self.__cells_grid):
+        while visited_cells_count != len(self.__cells_grid):
             current_cell.visited()
             next_cell = self.check_neighbors(current_cell)
 
             if next_cell:
                 next_cell.visited()
-                count += 1
+                visited_cells_count += 1
                 stack.append(current_cell)
                 self.remove_walls(current_cell, next_cell)
                 current_cell = next_cell
