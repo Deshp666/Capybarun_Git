@@ -1,83 +1,27 @@
-from abc import ABC, abstractmethod
 from model.constants import DELTA_TIME, GRAVITY, CAPYBARA_BASE_SPEED_Y, CAPYBARA_BONUS_SPEED, CAPYBARA_BASE_SPEED_X
 from presenter.constants import CAPYBARA_WIDTH, CAPYBARA_HEIGHT, CAPYBARA_POS_X, CAPYBARA_Y_POS, BEAR_POS_Y,\
     ENEMY_START_POS_X, BIRD_CENTER_POS_Y, BIRD_TOP_POS_Y, GROUND_HEIGHT, BIRD_HEIGHT, BEAR_HEIGHT, BIRD_WIDTH,\
     BEAR_WIDTH, GROUND_Y_POS, BIRD_BOTTOM_POS_Y
 from random import randint, choice
-import pickle
 import pygame as pg
-pg.init()
+from abc import ABC, abstractmethod
 
 
-class TimeDependent(ABC):
+class Entity(ABC):
     @abstractmethod
-    def get_for_print(self) -> str:
+    def make_rect(self) -> pg.Rect:
         pass
 
     @abstractmethod
-    def update(self):
+    def get_rect(self) -> pg.Rect:
+        pass
+
+    @abstractmethod
+    def move(self):
         pass
 
 
-class Timer(TimeDependent):
-    def __init__(self, time: int):
-        self.__value: int = time
-
-    def update(self) -> bool:
-        if self.__value > 0:
-            self.__value -= DELTA_TIME
-            return True
-        elif self.__value - DELTA_TIME < 0:
-            return False
-
-    def get_for_print(self) -> str:
-        minutes, seconds = self.get_time()
-        if seconds < 10:
-            seconds = '0' + str(seconds)
-        str_time = f'0{minutes}:{seconds}'
-        return str_time
-
-    def get_time(self) -> tuple[int, int]:
-        time = round(self.__value)
-        minutes = time // 60
-        seconds = time % 60
-        return minutes, seconds
-
-
-class Score(TimeDependent):
-    def __init__(self):
-        self.score: int = 0
-        self.record: str = self.load()
-
-    def update(self):
-        self.score += DELTA_TIME
-
-    def get_for_print(self) -> str:
-        score = self.get_score()
-        score_to_print = f"{score:>04}"
-        return score_to_print
-
-    def get_score(self) -> int:
-        return round(self.score)
-
-    def get_record(self) -> str:
-        return str(self.record)
-
-    def save(self):
-        with open('record.pickle', 'wb') as file:
-            pickle.dump(self.get_for_print(), file)
-
-    def load(self) -> str:
-        try:
-            file = open('record.pickle', 'rb')
-        except FileNotFoundError:
-            return self.get_for_print()
-        record = pickle.load(file)
-        file.close()
-        return record
-
-
-class Enemy:
+class Enemy(Entity):
     def __init__(self, approach_speed: int):
         self.__enemy_type: str = self.choose_enemy_type()
         self.__x: int = ENEMY_START_POS_X
@@ -118,7 +62,7 @@ class Enemy:
         self.__rect.x -= self.__speed
 
 
-class Capybara:
+class Capybara(Entity):
     def __init__(self):
         self.__x: int = CAPYBARA_POS_X
         self.__y: int = CAPYBARA_Y_POS
@@ -146,7 +90,7 @@ class Capybara:
     def increase_speed(self):
         self.__speed_x += CAPYBARA_BONUS_SPEED
 
-    def jump(self, need_to_jump: bool, need_to_increase_gravity: bool = False):
+    def jump(self, need_to_jump: bool, need_to_increase_gravity: bool):
         if need_to_jump and self.__is_on_ground:
             self.__is_on_ground = False
             self.__speed_y = CAPYBARA_BASE_SPEED_Y
@@ -162,7 +106,7 @@ class Capybara:
                 self.__is_on_ground = True
                 self.__rect.y = CAPYBARA_Y_POS
 
-    def run(self, need_to_jump: bool, need_to_increase_gravity: bool):
+    def move(self, need_to_jump: bool = False, need_to_increase_gravity: bool = False):
         self.increase_speed()
         self.jump(need_to_jump, need_to_increase_gravity)
 

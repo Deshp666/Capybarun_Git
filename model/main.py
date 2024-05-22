@@ -1,9 +1,11 @@
 import pygame as pg
-from model.constants import DELTA_TIME, TIME_FOR_MAZE, CELL_SIZE
-from model.classes import Timer, Score, Capybara, Enemy
+from model.constants import DELTA_TIME, TIME_FOR_MAZE, CELL_SIZE, JUMP_SOUND_PATH, BASIC_VOLUME
+from model.time_dependent_classes import Timer, Score
 from model.maze import Maze, MazePlayer, MazePrize
+from model.runner_entitys import Enemy, Capybara
 
 pg.init()
+pg.mixer.init()
 
 
 class Model:
@@ -21,13 +23,17 @@ class Model:
         self.__pause: bool = False
         self.__enemy_stack: list[Enemy] = []
         self.__capybara: Capybara = Capybara()
+        self.__jump_sound = pg.mixer.Sound(JUMP_SOUND_PATH)
+        self.__jump_sound.set_volume(BASIC_VOLUME)
+        self.__sound_turned_on: bool = True
+        self.__game_over = False
         self.__prepare_data(maze_width, maze_height, indentation_x, indentation_y)
 
     def __prepare_data(self, maze_width: int,
                        maze_height: int,
                        indentation_x: int,
                        indentation_y: int):
-        for death in range(1, 80):
+        for death in range(1, 40):
             current_maze_number = death - 1
             cell_size = CELL_SIZE * (0.5 + 0.5 / death)
             cell_indentation = cell_size // 4
@@ -58,6 +64,21 @@ class Model:
 
     def toggle_pause(self):
         self.__pause = not self.__pause
+
+    def get_sound_condition(self):
+        return self.__sound_turned_on
+
+    def toggle_sound(self):
+        if self.__sound_turned_on:
+            self.__sound_turned_on = False
+            self.__jump_sound.set_volume(0)
+        else:
+            self.__sound_turned_on = True
+            self.__jump_sound.set_volume(BASIC_VOLUME)
+
+    def play_jump_sound(self):
+        if self.get_capybara_state() and not self.get_pause_condition():
+            self.__jump_sound.play()
 
     def is_maze_time_not_over(self) -> bool:
         return self.__timers_list[self.__death_count].update()
@@ -111,13 +132,18 @@ class Model:
         capybara_in_maze_rect = self.__maze_capybara_list[self.__death_count].get_rect(False)
         prize_rect = self.__maze_prize_list[self.__death_count].get_rect()
         if capybara_in_maze_rect.colliderect(prize_rect):
+            if self.get_pause_condition():
+                self.toggle_pause()
             return True
         else:
             return False
 
-    def run(self, need_to_jump: bool = False, need_to_increase_gravity: bool = False):
+    def game_over(self):
+        self.__game_over = True
+
+    def run(self, need_to_jump: bool, need_to_increase_gravity: bool = False):
         if not self.__pause:
-            self.__capybara.run(need_to_jump, need_to_increase_gravity)
+            self.__capybara.move(need_to_jump, need_to_increase_gravity)
             self.__score.update()
             if self.get_enemy_information() is None:
                 self.__enemy_stack.append(Enemy(self.get_capybara_speed()))
@@ -160,3 +186,6 @@ class Model:
                 return True
         else:
             return False
+
+    def is_game_over(self) -> bool:
+        return self.__game_over
