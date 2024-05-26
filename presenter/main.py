@@ -36,7 +36,6 @@ class ScenePresenter:
         pass
 
 
-
 class MenuPresenter(ScenePresenter):
     def __init__(self, screen: pg.Surface, model: Model, scene_render: SceneRender):
         super().__init__(screen, model, scene_render)
@@ -178,6 +177,9 @@ class Presenter:
                 if event.key == pg.K_ESCAPE:
                     self.__game_logic.toggle_pause()
 
+        self.handle_gameplay()
+
+    def handle_gameplay(self):
         if self.__scene == SceneState.runner:
             self.__scene = self.__runner_presenter.handle_event()
 
@@ -190,17 +192,6 @@ class Presenter:
         x, y = pg.mouse.get_pos()
         if restart_button.collide_click((x, y)) or keys[pg.K_RETURN]:
             self.restart_game()
-
-    def restart_game(self):
-        self.__scene = SceneState.runner
-        self.__game_logic = Model(MAZE_WIDTH,
-                                  MAZE_HEIGHT,
-                                  MAZE_INDENTATION_X,
-                                  MAZE_INDENTATION_Y)
-        self.__scene_render = SceneRender()
-        self.__menu_presenter = MenuPresenter(self.__screen, self.__game_logic, self.__scene_render)
-        self.__runner_presenter = RunnerPresenter(self.__screen, self.__game_logic, self.__scene_render)
-        self.__maze_presenter = MazePresenter(self.__screen, self.__game_logic, self.__scene_render)
 
     def render(self):
         if self.__scene == SceneState.menu:
@@ -219,6 +210,17 @@ class Presenter:
         score = self.__game_logic.get_score()
         record = self.__game_logic.get_record()
         self.__scene_render.render_final_scene(self.__screen, score, record)
+
+    def restart_game(self):
+        self.__scene = SceneState.runner
+        self.__game_logic = Model(MAZE_WIDTH,
+                                  MAZE_HEIGHT,
+                                  MAZE_INDENTATION_X,
+                                  MAZE_INDENTATION_Y)
+        self.__scene_render = SceneRender()
+        self.__menu_presenter = MenuPresenter(self.__screen, self.__game_logic, self.__scene_render)
+        self.__runner_presenter = RunnerPresenter(self.__screen, self.__game_logic, self.__scene_render)
+        self.__maze_presenter = MazePresenter(self.__screen, self.__game_logic, self.__scene_render)
 
     def mainloop(self):
         while True:
