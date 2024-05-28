@@ -160,7 +160,6 @@ class MazePlayer:
     def __init__(self, x: int, y: int, size: int, death_count: int, maze_boundaries: list[pg.Rect]):
         self.__x: int = x
         self.__y: int = y
-        self.__death_count: int = death_count
         self.__speed_bonus: int = death_count // 2
         self.__speed: int = CAPYBARA_IN_MAZE_BASE_SPEED + self.__speed_bonus
         self.__width: int = size - (size // 2)

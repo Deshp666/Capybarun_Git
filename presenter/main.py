@@ -1,5 +1,5 @@
 from view.main import SceneRender
-from view.constants import WIDTH, HEIGHT, FPS, CAPTION, MAZE_WIDTH, MAZE_HEIGHT, MAZE_INDENTATION_Y, \
+from view.constants import SCREEN_WIDTH, SCREEN_HEIGHT, FPS, CAPTION, MAZE_WIDTH, MAZE_HEIGHT, MAZE_INDENTATION_Y, \
     MAZE_INDENTATION_X
 from view.buttons import Button
 from model.main import Model
@@ -43,8 +43,8 @@ class MenuPresenter(ScenePresenter):
 
     def handle_event(self) -> SceneState:
         keys = pg.key.get_pressed()
-        start_button = self._buttons['start_button']
-        turn_on_button = self._buttons['turn_on_sound']
+        start_button = self._buttons.start_button
+        turn_on_button = self._buttons.turn_on_sound
         x, y = pg.mouse.get_pos()
         if start_button.collide_click((x, y)) or keys[pg.K_RETURN]:
             self.__scene_to_return = SceneState.runner
@@ -80,8 +80,8 @@ class RunnerPresenter(ScenePresenter):
         return SceneState.runner
 
     def handle_pause(self):
-        pause_button = self._buttons['pause_button']
-        turn_on_button = self._buttons['turn_on_sound']
+        pause_button = self._buttons.pause_button
+        turn_on_button = self._buttons.turn_on_sound
         x, y = pg.mouse.get_pos()
         if pause_button.collide_click((x, y)):
             self._game_logic.toggle_pause()
@@ -141,7 +141,7 @@ class MazePresenter(ScenePresenter):
 
 class Presenter:
     def __init__(self):
-        self.__screen: pg.Surface = pg.display.set_mode((WIDTH, HEIGHT))
+        self.__screen: pg.Surface = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         pg.display.set_caption(CAPTION)
         self.__scene: Enum = SceneState.menu
         self.__clock: pg.time.Clock = pg.time.Clock()
@@ -155,7 +155,7 @@ class Presenter:
         self.__runner_presenter = RunnerPresenter(self.__screen, self.__game_logic, self.__scene_render)
         self.__maze_presenter = MazePresenter(self.__screen, self.__game_logic, self.__scene_render)
 
-    def handle_event(self):
+    def __handle_event(self):
         events = pg.event.get()
 
         for event in events:
@@ -171,29 +171,29 @@ class Presenter:
                     self.__runner_presenter.handle_pause()
 
                 elif self.__scene == SceneState.final:
-                    self.handle_final_click()
+                    self.__handle_final_click()
 
             if event.type == pg.KEYDOWN and SceneState.runner:
-                if event.key == pg.K_ESCAPE:
+                if event.key == pg.K_ESCAPE and self.__scene != SceneState.final:
                     self.__game_logic.toggle_pause()
 
-        self.handle_gameplay()
+        self.__handle_gameplay()
 
-    def handle_gameplay(self):
+    def __handle_gameplay(self):
         if self.__scene == SceneState.runner:
             self.__scene = self.__runner_presenter.handle_event()
 
         if self.__scene == SceneState.maze:
             self.__scene = self.__maze_presenter.handle_event()
 
-    def handle_final_click(self):
+    def __handle_final_click(self):
         keys = pg.key.get_pressed()
-        restart_button = self.__buttons['restart_button']
+        restart_button = self.__buttons.restart_button
         x, y = pg.mouse.get_pos()
-        if restart_button.collide_click((x, y)) or keys[pg.K_RETURN]:
+        if (restart_button.collide_click((x, y)) and not keys[pg.K_ESCAPE]) or keys[pg.K_RETURN]:
             self.restart_game()
 
-    def render(self):
+    def __render(self):
         if self.__scene == SceneState.menu:
             self.__menu_presenter.render()
 
@@ -204,9 +204,9 @@ class Presenter:
             self.__maze_presenter.render()
 
         elif self.__scene == SceneState.final:
-            self.render_final_scene()
+            self.__render_final_scene()
 
-    def render_final_scene(self):
+    def __render_final_scene(self):
         score = self.__game_logic.get_score()
         record = self.__game_logic.get_record()
         self.__scene_render.render_final_scene(self.__screen, score, record)
@@ -224,7 +224,9 @@ class Presenter:
 
     def mainloop(self):
         while True:
-            self.render()
-            self.handle_event()
+            self.__render()
+            self.__handle_event()
 
             self.__clock.tick(FPS)
+            print(self.__game_logic.get_pause_condition())
+

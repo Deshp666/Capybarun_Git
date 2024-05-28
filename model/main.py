@@ -2,10 +2,7 @@ import pygame as pg
 from model.constants import DELTA_TIME, TIME_FOR_MAZE, CELL_SIZE, JUMP_SOUND_PATH, BASIC_VOLUME
 from model.time_dependent_classes import Timer, Score
 from model.maze import Maze, MazePlayer, MazePrize
-from model.runner_entitys import Enemy, Capybara
-
-pg.init()
-pg.mixer.init()
+from model.runner_entities import Enemy, Capybara
 
 
 class Model:
