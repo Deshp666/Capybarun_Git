@@ -1,4 +1,5 @@
-from model.constants import DELTA_TIME, GRAVITY, CAPYBARA_BASE_SPEED_Y, CAPYBARA_BONUS_SPEED, CAPYBARA_BASE_SPEED_X
+from model.constants import DELTA_TIME, GRAVITY, CAPYBARA_BASE_SPEED_Y, CAPYBARA_BONUS_SPEED, CAPYBARA_BASE_SPEED_X,\
+    CAPYBARA_MAX_SPEED_X
 from presenter.constants import CAPYBARA_WIDTH, CAPYBARA_HEIGHT, CAPYBARA_POS_X, CAPYBARA_Y_POS, BEAR_POS_Y,\
     ENEMY_START_POS_X, BIRD_CENTER_POS_Y, BIRD_TOP_POS_Y, GROUND_HEIGHT, BIRD_HEIGHT, BEAR_HEIGHT, BIRD_WIDTH,\
     BEAR_WIDTH, GROUND_Y_POS, BIRD_BOTTOM_POS_Y
@@ -88,7 +89,8 @@ class Capybara(Entity):
         return round(self.__speed_x)
 
     def increase_speed(self):
-        self.__speed_x += CAPYBARA_BONUS_SPEED
+        if self.__speed_x <= CAPYBARA_MAX_SPEED_X:
+            self.__speed_x += CAPYBARA_BONUS_SPEED
 
     def jump(self, need_to_jump: bool, need_to_increase_gravity: bool):
         if need_to_jump and self.__is_on_ground:
