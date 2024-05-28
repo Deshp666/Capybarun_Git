@@ -28,7 +28,7 @@ class ScenePresenter:
         self._change_scene = False
 
     @abstractmethod
-    def handle_event(self):
+    def handle_event(self) -> SceneState:
         pass
 
     @abstractmethod
@@ -41,7 +41,7 @@ class MenuPresenter(ScenePresenter):
         super().__init__(screen, model, scene_render)
         self.__scene_to_return = SceneState.menu
 
-    def handle_event(self):
+    def handle_event(self) -> SceneState:
         keys = pg.key.get_pressed()
         start_button = self._buttons['start_button']
         turn_on_button = self._buttons['turn_on_sound']
@@ -62,7 +62,7 @@ class RunnerPresenter(ScenePresenter):
     def __init__(self, screen: pg.Surface, model: Model, scene_render: SceneRender):
         super().__init__(screen, model, scene_render)
 
-    def handle_event(self):
+    def handle_event(self) -> SceneState:
         keys = pg.key.get_pressed()
         if not self._game_logic.is_capybara_dead():
             if keys[pg.K_UP] or keys[pg.K_SPACE] or keys[pg.K_w]:
@@ -110,7 +110,7 @@ class MazePresenter(ScenePresenter):
     def __init__(self, screen: pg.Surface, model: Model, scene_render: SceneRender):
         super().__init__(screen, model, scene_render)
 
-    def handle_event(self):
+    def handle_event(self) -> SceneState:
         keys = pg.key.get_pressed()
         if self._game_logic.is_maze_time_not_over():
             self._game_logic.capybara_in_maze_move(keys)

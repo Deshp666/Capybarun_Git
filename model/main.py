@@ -65,7 +65,7 @@ class Model:
     def toggle_pause(self):
         self.__pause = not self.__pause
 
-    def get_sound_condition(self):
+    def get_sound_condition(self) -> bool:
         return self.__sound_turned_on
 
     def toggle_sound(self):
@@ -180,7 +180,7 @@ class Model:
         enemy_rect = self.get_enemy_information()
         if enemy_rect is not None:
             if capybara_rect.colliderect(enemy_rect[0]):
-                self.__death_count += 1
+                self.__update_death_count()
                 self.__enemy_stack.pop()
                 self.__capybara.reset()
                 return True
