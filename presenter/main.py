@@ -228,5 +228,5 @@ class Presenter:
             self.__handle_event()
 
             self.__clock.tick(FPS)
-            print(self.__game_logic.get_pause_condition())
+
 
