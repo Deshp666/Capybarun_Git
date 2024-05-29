@@ -60,7 +60,7 @@ class Texts:
 class SceneRender:
     def __init__(self):
         self.__text: Texts = Texts()
-        self.__buttons = Buttons()
+        self.__buttons: Buttons = Buttons()
         self.__sprites: Sprites = Sprites()
         self.__first_background_part_x: float = 0
         self.__first_background_part_y: float = 0
