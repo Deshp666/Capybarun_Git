@@ -7,7 +7,7 @@ PRIZE_PATH = 'view/sprites/orange.png'
 BG_FOR_TEXT_PATH = 'view/sprites/bg_for_text.png'
 BG_RIGHT_PART = 'view/sprites/bg_right.png'
 BG_LEFT_PART = 'view/sprites/bg_left.png'
-BG_FINAL = 'view/sprites/bg_f.png'
+BG_MENU_FINAL = 'view/sprites/bg_f.png'
 BEAR_ANIMATION_PATHS = ['view/sprites/1st_position_bear.png',
                         'view/sprites/2nd_position_bear.png',
                         'view/sprites/3rd_position_bear.png',

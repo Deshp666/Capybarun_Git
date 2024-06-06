@@ -1,81 +1,25 @@
 import pygame as pg
-from view.constants import WHITE_COLOR, GRAY_COLOR, PEACH_COLOR, SCREEN_WIDTH, SCREEN_HEIGHT, SWAMP_COLOR, \
-    DEEP_GREEN_COLOR, \
-    MAZE_HEIGHT, MAZE_WIDTH, CAPTION, TIMER_COORDINATES, TIMER_FONT_SIZE, SCORE_COORDINATES, SCORE_FONT_SIZE, \
-    PAUSE_MENU_SIZE, PAUSE_FONT_SIZE, PAUSE_COORDINATES, CAPTION_TEXT_COORDINATES, CAPTION_TEXT_SIZE, \
-    START_BUTTON_COORDINATES, START_BUTTON_SIZE, START_BUTTON_FONT_SIZE, BLACK_COLOR, MAZE_BACKGROUND_COORDINATES, \
-    HALF_WIDTH, HALF_HEIGHT, GAMEOVER_TEXT_COORDINATES, GAMEOVER_TEXT_FONT_SIZE, FINAL_SCREEN_BACKGROUND_SIZE, \
-    FINAL_SCREEN_BACKGROUND_COORDINATES, SCORE_TEXT_COORDINATES, SCORE_NUM_TEXT_COORDINATES, RECORD_TEXT_COORDINATES, \
-    RECORD_NUM__TEXT_COORDINATES, RESTART_BUTTON_FONT_SIZE, RESTART_BUTTON_COORDINATES, RESTART_BUTTON_SIZE, \
-    FINAL_TEXT_FONT_SIZE, BACKGROUND_SPEED_MULTIPLIER, CAPYBARA_SPEED_MULTIPLIER, ENEMY_SPEED_MULTIPLIER, \
-    SOUND_BUTTON_COORDINATE, SOUND_BUTTON_SIZE
-from view.buttons import Button, Text
-from view.paths import BG_FOR_TEXT_PATH, SOUND_TURN_ON_BUTTON_PATH, SOUND_TURN_OFF_BUTTON_PATH
-from view.sprites import Sprites
+from view.constants import *
+from view.interface_elements import *
+from view.paths import *
+from view.sprites import *
+from abc import abstractmethod
 
 
-class Buttons:
-    start_button = Button(START_BUTTON_COORDINATES,
-                          'START',
-                          START_BUTTON_SIZE,
-                          START_BUTTON_FONT_SIZE,
-                          BG_FOR_TEXT_PATH)
-    pause_button = Button(PAUSE_COORDINATES,
-                          'PAUSE',
-                          PAUSE_MENU_SIZE,
-                          PAUSE_FONT_SIZE,
-                          BG_FOR_TEXT_PATH)
-    restart_button = Button(RESTART_BUTTON_COORDINATES,
-                            'RESTART',
-                            RESTART_BUTTON_SIZE,
-                            RESTART_BUTTON_FONT_SIZE,
-                            BG_FOR_TEXT_PATH)
-    turn_on_sound = Button(SOUND_BUTTON_COORDINATE,
-                           '',
-                           SOUND_BUTTON_SIZE,
-                           0,
-                           SOUND_TURN_ON_BUTTON_PATH)
-    turn_off_sound = Button(SOUND_BUTTON_COORDINATE,
-                            '',
-                            SOUND_BUTTON_SIZE,
-                            0,
-                            SOUND_TURN_OFF_BUTTON_PATH)
-
-
-class Texts:
-    caption = Text(CAPTION_TEXT_COORDINATES,
-                   CAPTION,
-                   CAPTION_TEXT_SIZE)
-    score = Text(SCORE_TEXT_COORDINATES,
-                 'SCORE',
-                 FINAL_TEXT_FONT_SIZE)
-    record = Text(RECORD_TEXT_COORDINATES,
-                  'RECORD',
-                  FINAL_TEXT_FONT_SIZE)
-    gameover = Text(GAMEOVER_TEXT_COORDINATES,
-                    'GAMEOVER',
-                    GAMEOVER_TEXT_FONT_SIZE)
-
-
-class SceneRender:
+class StartRender:
     def __init__(self):
-        self.__text: Texts = Texts()
-        self.__buttons: Buttons = Buttons()
-        self.__sprites: Sprites = Sprites()
-        self.__first_background_part_x: float = 0
-        self.__first_background_part_y: float = 0
-        self.__second_background_part_x: float = SCREEN_WIDTH
-        self.__second_background_part_y: float = 0
-        self.enemy_parameter_to_calculate_frame: float = 0
-        self.capybara_parameter_to_calculate_frame: float = 0
+        self.__start_screen_buttons = StartSceneButtons
+        self.__sound_buttons = SoundButtons
+        self.__texts = StartSceneTexts
+        self.__sprites = StartSceneSprites()
 
-    def render_menu_scene(self, screen: pg.Surface, sounds_on: bool):
-        self.__render_background(screen)
+    def render_scene(self, screen: pg.Surface, sounds_on: bool):
+        render_background(screen)
 
-        start_button = self.__buttons.start_button
-        turn_on_button = self.__buttons.turn_on_sound
-        turn_off_button = self.__buttons.turn_off_sound
-        caption_text = self.__text.caption
+        start_button = self.__start_screen_buttons.start_button
+        turn_on_button = self.__sound_buttons.turn_on_sound
+        turn_off_button = self.__sound_buttons.turn_off_sound
+        caption_text = self.__texts.caption
 
         start_button.render(screen)
 
@@ -94,13 +38,26 @@ class SceneRender:
         background = pg.transform.scale(self.__sprites.background, size)
         screen.blit(background, coordinates)
 
-    def render_runner_scene(self, screen: pg.Surface,
-                            record: str,
-                            capybara_information: tuple[pg.Rect, bool],
-                            enemy_information: tuple[pg.Rect, str],
-                            pause_state: bool,
-                            speed: int,
-                            sound_state: bool):
+
+class RunnerRender:
+    def __init__(self):
+        self.__sound_buttons = SoundButtons
+        self.__sprites = RunnerSceneSprites()
+        self.__first_background_part_x: float = 0
+        self.__first_background_part_y: float = 0
+        self.__second_background_part_x: float = SCREEN_WIDTH
+        self.__second_background_part_y: float = 0
+        self.__enemy_parameter_to_calculate_frame: float = 0
+        self.__capybara_parameter_to_calculate_frame: float = 0
+
+    def render_scene(self,
+                     screen: pg.Surface,
+                     record: str,
+                     capybara_information: tuple[pg.Rect, bool],
+                     enemy_information: tuple[pg.Rect, str],
+                     pause_state: bool,
+                     speed: int,
+                     sound_state: bool):
         if pause_state or not capybara_information[1]:
             need_to_move_bg = False
         else:
@@ -125,8 +82,8 @@ class SceneRender:
                                     screen: pg.Surface,
                                     need_to_move: bool,
                                     speed: int = 0):
-        first_bg_part = pg.transform.scale(self.__sprites.background, (SCREEN_WIDTH, SCREEN_HEIGHT))
-        second_bg_part = pg.transform.scale(self.__sprites.background, (SCREEN_WIDTH, SCREEN_HEIGHT))
+        first_bg_part = pg.transform.scale(self.__sprites.first_background_part, (SCREEN_WIDTH, SCREEN_HEIGHT))
+        second_bg_part = pg.transform.scale(self.__sprites.second_background_part, (SCREEN_WIDTH, SCREEN_HEIGHT))
         animation_speed = speed / BACKGROUND_SPEED_MULTIPLIER
 
         if need_to_move:
@@ -158,13 +115,13 @@ class SceneRender:
         animations_frames = self.__sprites.capybara_animation
         animations_frames_count = len(animations_frames)
         jump_sprite = self.__sprites.capybara_jump
-        frame_to_render = int(self.capybara_parameter_to_calculate_frame % animations_frames_count)
+        frame_to_render = int(self.__capybara_parameter_to_calculate_frame % animations_frames_count)
 
         if is_capybara_on_ground:
             frame = pg.transform.scale(animations_frames[frame_to_render], size)
             screen.blit(frame, coordinates)
             if need_to_move:
-                self.capybara_parameter_to_calculate_frame += animation_speed
+                self.__capybara_parameter_to_calculate_frame += animation_speed
         else:
             sprite = pg.transform.scale(jump_sprite, size)
             screen.blit(sprite, coordinates)
@@ -186,14 +143,14 @@ class SceneRender:
                 animations_frames = self.__sprites.bear_animation
 
             frames_count = len(animations_frames)
-            frame_to_render = int(self.enemy_parameter_to_calculate_frame % frames_count)
+            frame_to_render = int(self.__enemy_parameter_to_calculate_frame % frames_count)
             sprite = pg.transform.scale(animations_frames[frame_to_render], size)
 
             animation_speed = speed / ENEMY_SPEED_MULTIPLIER
             screen.blit(sprite, coordinates)
 
             if need_to_move:
-                self.enemy_parameter_to_calculate_frame += animation_speed
+                self.__enemy_parameter_to_calculate_frame += animation_speed
 
     @staticmethod
     def __render_score(screen: pg.Surface,
@@ -225,14 +182,19 @@ class SceneRender:
 
         pause_button.render(screen)
 
-    def render_maze_scene(self,
-                          screen: pg.Surface,
-                          time_to_print: str,
-                          maze_boundaries: list[pg.Rect],
-                          maze_size: tuple[int, int],
-                          capybara_in_maze_information: tuple[pg.Rect, bool],
-                          prize_rect: pg.Rect):
-        self.__render_dynamic_background(screen, need_to_move=False)
+
+class MazeRender:
+    def __init__(self):
+        self.__sprites = MazeSceneSprites()
+
+    def render_scene(self,
+                     screen: pg.Surface,
+                     time_to_print: str,
+                     maze_boundaries: list[pg.Rect],
+                     maze_size: tuple[int, int],
+                     capybara_in_maze_information: tuple[pg.Rect, bool],
+                     prize_rect: pg.Rect):
+        render_background(screen)
         self.__render_maze(screen, maze_boundaries, maze_size)
         self.__render_player_icon_maze(screen, capybara_in_maze_information)
         self.__render_prize(screen, prize_rect)
@@ -277,24 +239,35 @@ class SceneRender:
                      SWAMP_COLOR)
         timer.render(screen)
 
-    def render_final_scene(self,
-                           screen: pg.Surface,
-                           score: str,
-                           record: str):
-        self.__render_background(screen)
+    @staticmethod
+    def __create_background_for_maze(background_size: tuple[int, int]) -> pg.Surface:
+        size = background_size
+        image = pg.Surface(size)
+        image.fill(DEEP_GREEN_COLOR)
+        return image
+
+
+class FinalRender:
+    def __init__(self):
+        self.__sprites = FinalSceneSprites()
+        self.__texts = FinalSceneTexts
+        self.__buttons = FinalSceneButtons
+
+    def render_scene(self, screen: pg.Surface, score: str, record: str):
+        render_background(screen)
         self.__render_final_screen(screen, score, record)
         pg.display.update()
 
     def __render_final_screen(self, screen: pg.Surface, score: str, record: str):
-        bg_image = self.__sprites.bg_final
+        bg_image = self.__sprites.bg_menu_final
         bg_image = pg.transform.scale(bg_image, FINAL_SCREEN_BACKGROUND_SIZE)
         screen.blit(bg_image, FINAL_SCREEN_BACKGROUND_COORDINATES)
 
         score_num = Text(SCORE_NUM_TEXT_COORDINATES, score, FINAL_TEXT_FONT_SIZE, WHITE_COLOR)
         record_num = Text(RECORD_NUM__TEXT_COORDINATES, record, FINAL_TEXT_FONT_SIZE, WHITE_COLOR)
-        gameover_text = self.__text.gameover
-        score_text = self.__text.gameover
-        record_text = self.__text.record
+        gameover_text = self.__texts.gameover
+        score_text = self.__texts.gameover
+        record_text = self.__texts.record
         restart_button = self.__buttons.restart_button
 
         score_num.render(screen)
@@ -304,12 +277,62 @@ class SceneRender:
         record_text.render(screen)
         restart_button.render(screen)
 
-    @staticmethod
-    def __create_background_for_maze(background_size: tuple[int, int]) -> pg.Surface:
-        size = background_size
-        image = pg.Surface(size)
-        image.fill(DEEP_GREEN_COLOR)
-        return image
 
-    def get_buttons(self) -> Buttons:
+class ViewController:
+    def __init__(self):
+        self.__text: TextsCollection = TextsCollection()
+        self.__buttons: InterfaceButtons = InterfaceButtons()
+        self.__sprites: Sprites = Sprites()
+        self.__start_scene_render = StartRender()
+        self.__runner_scene_render = RunnerRender()
+        self.__maze_scene_render = MazeRender()
+        self.__final_scene_render = FinalRender()
+
+    def render_start_scene(self, screen: pg.Surface, sounds_on: bool):
+        self.__start_scene_render.render_scene(screen, sounds_on)
+
+    def render_runner_scene(self, screen: pg.Surface,
+                            record: str,
+                            capybara_information: tuple[pg.Rect, bool],
+                            enemy_information: tuple[pg.Rect, str],
+                            pause_state: bool,
+                            speed: int,
+                            sound_state: bool):
+        self.__runner_scene_render.render_scene(screen,
+                                                record,
+                                                capybara_information,
+                                                enemy_information,
+                                                pause_state,
+                                                speed,
+                                                sound_state)
+
+    def render_maze_scene(self,
+                          screen: pg.Surface,
+                          time_to_print: str,
+                          maze_boundaries: list[pg.Rect],
+                          maze_size: tuple[int, int],
+                          capybara_in_maze_information: tuple[pg.Rect, bool],
+                          prize_rect: pg.Rect):
+        self.__maze_scene_render.render_scene(screen,
+                                              time_to_print,
+                                              maze_boundaries,
+                                              maze_size,
+                                              capybara_in_maze_information,
+                                              prize_rect)
+
+    def render_final_scene(self,
+                           screen: pg.Surface,
+                           score: str,
+                           record: str):
+        self.__final_scene_render.render_scene(screen, score, record)
+
+    def get_buttons(self) -> InterfaceButtons:
         return self.__buttons
+
+
+def render_background(screen: pg.Surface):
+    size = SCREEN_WIDTH, SCREEN_HEIGHT
+    coordinates = 0, 0
+    background = create_background()
+    background = pg.transform.scale(background, size)
+    screen.blit(background, coordinates)

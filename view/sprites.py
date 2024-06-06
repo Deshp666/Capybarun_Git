@@ -1,6 +1,5 @@
 import pygame as pg
-from view.paths import PRIZE_PATH, BACKGROUND_PATH, CAPY_FOR_MAZE_PATH, CAPY_JUMP_PATH, BG_FOR_TEXT_PATH,\
-    BG_RIGHT_PART, BG_LEFT_PART, BG_FINAL, BEAR_ANIMATION_PATHS, BIRD_ANIMATION_PATHS, CAPY_ANIMATION_PATH
+from view.paths import *
 pg.init()
 
 
@@ -15,8 +14,40 @@ class Sprites:
         self.capybara_in_maze = make_sprite(CAPY_FOR_MAZE_PATH)
         self.prize = make_sprite(PRIZE_PATH)
         self.capybara_jump = make_sprite(CAPY_JUMP_PATH)
-        self.bg_for_text = make_sprite(BG_FOR_TEXT_PATH)
         self.bear_animation = [make_sprite(path) for path in BEAR_ANIMATION_PATHS]
         self.bird_animation = [make_sprite(path) for path in BIRD_ANIMATION_PATHS]
         self.capybara_animation = [make_sprite(path) for path in CAPY_ANIMATION_PATH]
-        self.bg_final = make_sprite(BG_FINAL)
+        self.bg_menu_final = make_sprite(BG_MENU_FINAL)
+
+
+class StartSceneSprites:
+    def __init__(self):
+        self.background = create_background()
+
+
+class RunnerSceneSprites:
+    def __init__(self):
+        self.first_background_part = create_background()
+        self.second_background_part = create_background()
+        self.capybara_animation = [make_sprite(path) for path in CAPY_ANIMATION_PATH]
+        self.capybara_jump = make_sprite(CAPY_JUMP_PATH)
+        self.bear_animation = [make_sprite(path) for path in BEAR_ANIMATION_PATHS]
+        self.bird_animation = [make_sprite(path) for path in BIRD_ANIMATION_PATHS]
+
+
+class MazeSceneSprites:
+    def __init__(self):
+        self.background = create_background()
+        self.capybara_in_maze = make_sprite(CAPY_FOR_MAZE_PATH)
+        self.prize = make_sprite(PRIZE_PATH)
+
+
+class FinalSceneSprites:
+    def __init__(self):
+        self.background = create_background()
+        self.bg_menu_final = make_sprite(BG_MENU_FINAL)
+
+
+def create_background() -> pg.Surface:
+    background = make_sprite(BACKGROUND_PATH)
+    return background

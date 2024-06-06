@@ -1,7 +1,5 @@
-from view.main import SceneRender
-from view.constants import SCREEN_WIDTH, SCREEN_HEIGHT, FPS, CAPTION, MAZE_WIDTH, MAZE_HEIGHT, MAZE_INDENTATION_Y, \
-    MAZE_INDENTATION_X
-from view.buttons import Button
+from view.main import ViewController
+from view.constants import *
 from model.main import Model
 from abc import abstractmethod
 import pygame as pg
@@ -13,14 +11,14 @@ pg.mixer.init()
 
 
 class SceneState(Enum):
-    menu = 0
+    start = 0
     runner = 1
     maze = 2
     final = 3
 
 
 class ScenePresenter:
-    def __init__(self, screen: pg.Surface, model: Model, scene_render: SceneRender):
+    def __init__(self, screen: pg.Surface, model: Model, scene_render: ViewController):
         self._screen = screen
         self._game_logic = model
         self._scene_render = scene_render
@@ -36,10 +34,10 @@ class ScenePresenter:
         pass
 
 
-class MenuPresenter(ScenePresenter):
-    def __init__(self, screen: pg.Surface, model: Model, scene_render: SceneRender):
+class StartPresenter(ScenePresenter):
+    def __init__(self, screen: pg.Surface, model: Model, scene_render: ViewController):
         super().__init__(screen, model, scene_render)
-        self.__scene_to_return = SceneState.menu
+        self.__scene_to_return = SceneState.start
 
     def handle_event(self) -> SceneState:
         keys = pg.key.get_pressed()
@@ -51,15 +49,15 @@ class MenuPresenter(ScenePresenter):
             return SceneState.runner
         if turn_on_button.collide_click((x, y)):
             self._game_logic.toggle_sound()
-        return SceneState.menu
+        return SceneState.start
 
     def render(self):
         sound_state = self._game_logic.get_sound_condition()
-        self._scene_render.render_menu_scene(self._screen, sound_state)
+        self._scene_render.render_start_scene(self._screen, sound_state)
 
 
 class RunnerPresenter(ScenePresenter):
-    def __init__(self, screen: pg.Surface, model: Model, scene_render: SceneRender):
+    def __init__(self, screen: pg.Surface, model: Model, scene_render: ViewController):
         super().__init__(screen, model, scene_render)
 
     def handle_event(self) -> SceneState:
@@ -107,7 +105,7 @@ class RunnerPresenter(ScenePresenter):
 
 
 class MazePresenter(ScenePresenter):
-    def __init__(self, screen: pg.Surface, model: Model, scene_render: SceneRender):
+    def __init__(self, screen: pg.Surface, model: Model, scene_render: ViewController):
         super().__init__(screen, model, scene_render)
 
     def handle_event(self) -> SceneState:
@@ -143,15 +141,15 @@ class Presenter:
     def __init__(self):
         self.__screen: pg.Surface = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         pg.display.set_caption(CAPTION)
-        self.__scene: Enum = SceneState.menu
+        self.__scene: Enum = SceneState.start
         self.__clock: pg.time.Clock = pg.time.Clock()
         self.__game_logic: Model = Model(MAZE_WIDTH,
                                          MAZE_HEIGHT,
                                          MAZE_INDENTATION_X,
                                          MAZE_INDENTATION_Y)
-        self.__scene_render: SceneRender = SceneRender()
-        self.__buttons: dict[str:Button] = self.__scene_render.get_buttons()
-        self.__menu_presenter = MenuPresenter(self.__screen, self.__game_logic, self.__scene_render)
+        self.__scene_render: ViewController = ViewController()
+        self.__buttons = self.__scene_render.get_buttons()
+        self.__menu_presenter = StartPresenter(self.__screen, self.__game_logic, self.__scene_render)
         self.__runner_presenter = RunnerPresenter(self.__screen, self.__game_logic, self.__scene_render)
         self.__maze_presenter = MazePresenter(self.__screen, self.__game_logic, self.__scene_render)
 
@@ -164,7 +162,7 @@ class Presenter:
                 sys.exit()
 
             if event.type == pg.MOUSEBUTTONUP or event.type == pg.KEYDOWN:
-                if self.__scene == SceneState.menu:
+                if self.__scene == SceneState.start:
                     self.__scene = self.__menu_presenter.handle_event()
 
                 elif self.__game_logic.get_pause_condition():
@@ -194,7 +192,7 @@ class Presenter:
             self.restart_game()
 
     def __render(self):
-        if self.__scene == SceneState.menu:
+        if self.__scene == SceneState.start:
             self.__menu_presenter.render()
 
         elif self.__scene == SceneState.runner:
@@ -217,8 +215,8 @@ class Presenter:
                                   MAZE_HEIGHT,
                                   MAZE_INDENTATION_X,
                                   MAZE_INDENTATION_Y)
-        self.__scene_render = SceneRender()
-        self.__menu_presenter = MenuPresenter(self.__screen, self.__game_logic, self.__scene_render)
+        self.__scene_render = ViewController()
+        self.__menu_presenter = StartPresenter(self.__screen, self.__game_logic, self.__scene_render)
         self.__runner_presenter = RunnerPresenter(self.__screen, self.__game_logic, self.__scene_render)
         self.__maze_presenter = MazePresenter(self.__screen, self.__game_logic, self.__scene_render)
 
