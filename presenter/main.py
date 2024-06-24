@@ -48,11 +48,13 @@ class StartPresenter(ScenePresenter):
             self.__scene_to_return = SceneState.runner
             return SceneState.runner
         if turn_on_button.collide_click((x, y)):
-            self._game_logic.toggle_sound()
+            sounds = self._scene_render.get_sounds()
+            for sound in sounds:
+                self._game_logic.sound_logic.toggle_sound(sound)
         return SceneState.start
 
     def render(self):
-        sound_state = self._game_logic.get_sound_condition()
+        sound_state = self._game_logic.sound_logic.get_sound_condition()
         self._scene_render.render_start_scene(self._screen, sound_state)
 
 
@@ -62,17 +64,23 @@ class RunnerPresenter(ScenePresenter):
 
     def handle_event(self) -> SceneState:
         keys = pg.key.get_pressed()
-        if not self._game_logic.is_capybara_dead():
+        if not self._game_logic.runner_logic.is_capybara_dead():
             if keys[pg.K_UP] or keys[pg.K_SPACE] or keys[pg.K_w]:
-                self._game_logic.play_jump_sound()
-                self._game_logic.run(True)
+                is_capybara_on_ground = self._game_logic.runner_logic.get_capybara_state()
+                pause_condition = self._game_logic.runner_logic.get_pause_condition()
+                sound = self._scene_render.get_jump_sound()
+                self._game_logic.sound_logic.play_jump_sound(is_capybara_on_ground,
+                                                             pause_condition,
+                                                             sound)
+                self._game_logic.runner_logic.run(True)
 
             elif keys[pg.K_DOWN] or keys[pg.K_s]:
-                self._game_logic.run(False, True)
+                self._game_logic.runner_logic.run(False, True)
 
             else:
-                self._game_logic.run(False)
+                self._game_logic.runner_logic.run(False)
         else:
+            self._game_logic.update_death_count()
             return SceneState.maze
 
         return SceneState.runner
@@ -82,18 +90,20 @@ class RunnerPresenter(ScenePresenter):
         turn_on_button = self._buttons.turn_on_sound
         x, y = pg.mouse.get_pos()
         if pause_button.collide_click((x, y)):
-            self._game_logic.toggle_pause()
+            self._game_logic.runner_logic.toggle_pause()
         if turn_on_button.collide_click((x, y)):
-            self._game_logic.toggle_sound()
+            sounds = self._scene_render.get_sounds()
+            for sound in sounds:
+                self._game_logic.sound_logic.toggle_sound(sound)
 
     def render(self):
-        record = self._game_logic.get_record_value()
-        capybara_rect = self._game_logic.get_capybara_rect()
-        is_capybara_jump = self._game_logic.get_capybara_state()
-        enemy_rect = self._game_logic.get_enemy_information()
-        pause_condition = self._game_logic.get_pause_condition()
-        speed = self._game_logic.get_capybara_speed()
-        sound_state = self._game_logic.get_sound_condition()
+        record = self._game_logic.runner_logic.get_record_value()
+        capybara_rect = self._game_logic.runner_logic.get_capybara_rect()
+        is_capybara_jump = self._game_logic.runner_logic.get_capybara_state()
+        enemy_rect = self._game_logic.runner_logic.get_enemy_information()
+        pause_condition = self._game_logic.runner_logic.get_pause_condition()
+        speed = self._game_logic.runner_logic.get_capybara_speed()
+        sound_state = self._game_logic.sound_logic.get_sound_condition()
         self._scene_render.render_runner_scene(self._screen,
                                                record,
                                                (capybara_rect,
@@ -110,25 +120,24 @@ class MazePresenter(ScenePresenter):
 
     def handle_event(self) -> SceneState:
         keys = pg.key.get_pressed()
-        if self._game_logic.is_maze_time_not_over():
-            self._game_logic.capybara_in_maze_move(keys)
+        if self._game_logic.maze_logic.is_maze_time_not_over():
+            self._game_logic.maze_logic.capybara_in_maze_move(keys)
 
-            if self._game_logic.is_prize_received():
+            if self._game_logic.maze_logic.is_prize_received():
                 return SceneState.runner
 
             return SceneState.maze
 
         else:
-            self._game_logic.game_over()
-            self._game_logic.save_record()
+            self._game_logic.runner_logic.game_over()
             return SceneState.final
 
     def render(self):
-        time_to_print = self._game_logic.get_time_for_print()
-        maze = self._game_logic.get_maze_to_render()
-        maze_size = self._game_logic.get_maze_size()
-        capybara_in_maze_information = self._game_logic.get_maze_capybara_information()
-        prize_rect = self._game_logic.get_prize_rect()
+        time_to_print = self._game_logic.maze_logic.get_time_for_print()
+        maze = self._game_logic.maze_logic.get_maze_to_render()
+        maze_size = self._game_logic.maze_logic.get_maze_size()
+        capybara_in_maze_information = self._game_logic.maze_logic.get_maze_capybara_information()
+        prize_rect = self._game_logic.maze_logic.get_prize_rect()
         self._scene_render.render_maze_scene(self._screen,
                                              time_to_print,
                                              maze,
@@ -158,14 +167,14 @@ class Presenter:
 
         for event in events:
             if event.type == pg.QUIT:
-                self.__game_logic.save_record()
+                self.__game_logic.runner_logic.save_record()
                 sys.exit()
 
             if event.type == pg.MOUSEBUTTONUP or event.type == pg.KEYDOWN:
                 if self.__scene == SceneState.start:
                     self.__scene = self.__menu_presenter.handle_event()
 
-                elif self.__game_logic.get_pause_condition():
+                elif self.__game_logic.runner_logic.get_pause_condition():
                     self.__runner_presenter.handle_pause()
 
                 elif self.__scene == SceneState.final:
@@ -173,7 +182,7 @@ class Presenter:
 
             if event.type == pg.KEYDOWN and SceneState.runner:
                 if event.key == pg.K_ESCAPE and self.__scene != SceneState.final:
-                    self.__game_logic.toggle_pause()
+                    self.__game_logic.runner_logic.toggle_pause()
 
         self.__handle_gameplay()
 
@@ -205,8 +214,8 @@ class Presenter:
             self.__render_final_scene()
 
     def __render_final_scene(self):
-        score = self.__game_logic.get_score()
-        record = self.__game_logic.get_record()
+        score = self.__game_logic.runner_logic.get_score()
+        record = self.__game_logic.runner_logic.get_record()
         self.__scene_render.render_final_scene(self.__screen, score, record)
 
     def restart_game(self):

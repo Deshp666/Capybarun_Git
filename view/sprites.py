@@ -8,18 +8,6 @@ def make_sprite(path: str) -> pg.Surface:
     return image
 
 
-class Sprites:
-    def __init__(self):
-        self.background = make_sprite(BACKGROUND_PATH)
-        self.capybara_in_maze = make_sprite(CAPY_FOR_MAZE_PATH)
-        self.prize = make_sprite(PRIZE_PATH)
-        self.capybara_jump = make_sprite(CAPY_JUMP_PATH)
-        self.bear_animation = [make_sprite(path) for path in BEAR_ANIMATION_PATHS]
-        self.bird_animation = [make_sprite(path) for path in BIRD_ANIMATION_PATHS]
-        self.capybara_animation = [make_sprite(path) for path in CAPY_ANIMATION_PATH]
-        self.bg_menu_final = make_sprite(BG_MENU_FINAL)
-
-
 class StartSceneSprites:
     def __init__(self):
         self.background = create_background()

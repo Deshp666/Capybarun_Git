@@ -18,3 +18,4 @@ BIRD_ANIMATION_PATHS = ['view/sprites/1st_position_bird.png',
                         'view/sprites/4th_position_bird.png']
 CAPY_ANIMATION_PATH = ['view/sprites/capy_walk_1.png',
                        'view/sprites/capy_walk_2.png']
+JUMP_SOUND_PATH = 'view/sounds/jump.wav'

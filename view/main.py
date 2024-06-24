@@ -282,11 +282,12 @@ class ViewController:
     def __init__(self):
         self.__text: TextsCollection = TextsCollection()
         self.__buttons: InterfaceButtons = InterfaceButtons()
-        self.__sprites: Sprites = Sprites()
         self.__start_scene_render = StartRender()
         self.__runner_scene_render = RunnerRender()
         self.__maze_scene_render = MazeRender()
         self.__final_scene_render = FinalRender()
+        self.__jump_sound = pg.mixer.Sound(JUMP_SOUND_PATH)
+        self.__jump_sound.set_volume(0)
 
     def render_start_scene(self, screen: pg.Surface, sounds_on: bool):
         self.__start_scene_render.render_scene(screen, sounds_on)
@@ -328,6 +329,14 @@ class ViewController:
 
     def get_buttons(self) -> InterfaceButtons:
         return self.__buttons
+
+    def get_sounds(self) -> list[pg.mixer.Sound]:
+        jump_sound = self.__jump_sound
+        sounds = [jump_sound]
+        return sounds
+
+    def get_jump_sound(self):
+        return self.__jump_sound
 
 
 def render_background(screen: pg.Surface):
